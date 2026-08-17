@@ -75,11 +75,18 @@
       flex: 1; height: 30px; border: 1px solid #d3d3cc; background: #fff; border-radius: 7px;
       font-size: 12px; cursor: pointer;
     }
-    .popup-btns { display: flex; gap: 6px; margin-top: 8px; }
-    .popup-btns button {
-      flex: 1; height: 28px; border: 1px solid #d3d3cc; background: #fafafa; border-radius: 6px;
-      font-size: 12px; cursor: pointer;
+    /* Nearest-places list inside a pin popup */
+    .near-list { margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px; max-height: 230px; overflow-y: auto; min-width: 210px; }
+    .near-hd { font-size: 10px; color: #6b6b66; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 4px; }
+    .near-loading, .near-empty { font-size: 12px; color: #6b6b66; padding: 4px 0; }
+    .near-row {
+      display: flex; align-items: center; gap: 7px; width: 100%;
+      background: #fff; border: none; border-radius: 6px; padding: 5px 6px;
+      font-size: 13px; cursor: pointer; text-align: left; color: #222;
     }
+    .near-row:hover { background: #f4f5f3; }
+    .near-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .near-time { color: #1D9E75; font-weight: 700; white-space: nowrap; }
     /* Glyph chip shown next to each brand name in the layers selector */
     .legend-chip {
       display: inline-flex; align-items: center; justify-content: center;

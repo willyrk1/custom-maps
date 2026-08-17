@@ -67,6 +67,14 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   suppress new entries, and records `lastHash` so it never re-pushes the state
   it just applied. `commitHash(h, false)` on load normalizes the entry-point URL
   without adding an entry.
+- **Nearest-places popup**: clicking a pin lists the nearest place of every
+  other type with driving times (`populateNearest` in `app.js`), plus a 2nd of a
+  type when it's close and in a clearly different direction. Times come from one
+  OSRM **table** request (`/table/v1/driving/...?sources=0`) with a 5s abort +
+  straight-line fallback; tapping a row plots the route (clicked pin = start).
+  GOTCHA: do NOT call `popup.update()` after injecting rows — Leaflet re-renders
+  the popup from its stored string content and wipes them. We write into the
+  `.near-list` node and skip `update()`.
 - **Mobile drawers**: on `max-width:640px` the layers selector and the
   directions panel park off-screen (`transform: translateX`) with a `.drawer-tab`
   handle poking in; tapping toggles `.drawer-open` (→ `translateX(0)`).

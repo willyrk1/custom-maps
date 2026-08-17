@@ -117,6 +117,7 @@ window.addEventListener('DOMContentLoaded', () => {
 let map;
 const routeState = { start: null, end: null, line: null };
 let layerIndex = []; // [{ id, group }] for persisting which layers are shown
+let allPoints = []; // [{ name, lat, lng, layer:{id,name,color,glyph} }] for nearest-places lists
 
 function makeIcon(layer, point) {
   if (point.iconUrl) {
@@ -144,9 +145,92 @@ function popupHtml(point) {
   }
   return `<div class="pname">${escapeHtml(point.name)}</div>` +
     (rows ? `<table>${rows}</table>` : '') +
-    `<div class="popup-btns">` +
-    `<button data-role="start">Start here</button>` +
-    `<button data-role="end">End here</button></div>`;
+    `<div class="near-list"><div class="near-loading">Finding nearest places…</div></div>`;
+}
+
+// Geo helpers for the nearest-places list.
+function haversineMi(a, b) {
+  const R = 3958.8, toR = d => d * Math.PI / 180;
+  const dLat = toR(b.lat - a.lat), dLng = toR(b.lng - a.lng);
+  const s = Math.sin(dLat/2)**2 + Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+function bearing(a, b) {
+  const toR = d => d * Math.PI / 180, toD = r => r * 180 / Math.PI;
+  const dLng = toR(b.lng - a.lng);
+  const y = Math.sin(dLng) * Math.cos(toR(b.lat));
+  const x = Math.cos(toR(a.lat)) * Math.sin(toR(b.lat)) - Math.sin(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.cos(dLng);
+  return (toD(Math.atan2(y, x)) + 360) % 360;
+}
+function angleDiff(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
+
+// Fills a pin's popup with the nearest place of each other type (driving time
+// from OSRM's table service — one request for all), plus a 2nd of a type when
+// it's both close and in a clearly different direction. Tapping a row plots it.
+async function populateNearest(src, srcLayer, popup) {
+  const el = popup.getElement();
+  const listEl = el && el.querySelector('.near-list');
+  if (!listEl) return;
+
+  const cands = allPoints.filter(p => p.layer.id !== srcLayer.id &&
+    !(Math.abs(p.lat - src.lat) < 1e-9 && Math.abs(p.lng - src.lng) < 1e-9));
+  if (!cands.length) { listEl.innerHTML = '<div class="near-empty">Nothing else to compare.</div>'; return; }
+
+  // One OSRM table request: source 0 → every candidate. Fall back to a
+  // straight-line estimate (~30 mph) if the routing server is unavailable.
+  let durs = null, dists = null;
+  try {
+    const coords = [src, ...cands].map(p => `${p.lng},${p.lat}`).join(';');
+    const url = `https://router.project-osrm.org/table/v1/driving/${coords}?sources=0&annotations=duration,distance`;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000); // don't stall if OSRM is slow/rate-limited
+    const j = await (await fetch(url, { signal: ctrl.signal })).json();
+    clearTimeout(timer);
+    if (j.code === 'Ok' && j.durations && j.durations[0]) { durs = j.durations[0]; dists = j.distances && j.distances[0]; }
+  } catch (e) { /* fall back to straight-line estimate below */ }
+
+  cands.forEach((p, i) => {
+    if (durs && durs[i + 1] != null) {
+      p._min = durs[i + 1] / 60;
+      p._mi = dists && dists[i + 1] != null ? dists[i + 1] / 1609.34 : haversineMi(src, p);
+      p._est = false;
+    } else {
+      p._mi = haversineMi(src, p); p._min = p._mi * 2; p._est = true;
+    }
+    p._bear = bearing(src, p);
+  });
+
+  const byBrand = {};
+  cands.forEach(p => (byBrand[p.layer.id] ||= []).push(p));
+  const picks = [];
+  Object.values(byBrand).forEach(list => {
+    list.sort((a, b) => a._min - b._min);
+    picks.push(list[0]);
+    if (list[1] && list[1]._min <= list[0]._min * 1.5 && angleDiff(list[0]._bear, list[1]._bear) > 50) picks.push(list[1]);
+  });
+  picks.sort((a, b) => a._min - b._min);
+
+  const approx = picks.some(p => p._est);
+  listEl.innerHTML =
+    `<div class="near-hd">Nearest places${approx ? ' (approx)' : ''}</div>` +
+    picks.map((p, i) =>
+      `<button class="near-row" data-i="${i}">` +
+      `<span class="legend-chip" style="background:${p.layer.color}">${escapeHtml(p.layer.glyph)}</span>` +
+      `<span class="near-name">${escapeHtml(p.name)}</span>` +
+      `<span class="near-time">${p._est ? '~' : ''}${Math.round(p._min)} min</span></button>`
+    ).join('');
+
+  listEl.querySelectorAll('.near-row').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = picks[+btn.dataset.i];
+      setSlot('start', { name: src.name, lat: src.lat, lng: src.lng }, false);
+      setSlot('end', { name: p.name, lat: p.lat, lng: p.lng }, false);
+      computeRoute(true);
+      map.closePopup();
+      if (window.matchMedia('(max-width: 640px)').matches)
+        document.getElementById('route-panel').classList.add('drawer-open');
+    });
+  });
 }
 
 function setSlot(which, point, autoCompute = true) {
@@ -360,24 +444,19 @@ function initMap(data) {
 
   const overlays = {};
   layerIndex = [];
+  allPoints = [];
   (data.layers || []).forEach(layer => {
     const clustered = layer.id !== 'homes';                 // homes stay always-visible
     const group = clustered ? L.featureGroup.subGroup(parent) : L.layerGroup();
     layerIndex.push({ id: layer.id, group });
+    const layerMeta = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' };
     (layer.points || []).forEach(point => {
+      allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, layer: layerMeta });
       const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point) });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
       m.bindPopup(popupHtml(point));
-      m.on('popupopen', (e) => {
-        const node = e.popup.getElement();
-        node.querySelectorAll('.popup-btns button').forEach(btn => {
-          btn.addEventListener('click', () => {
-            setSlot(btn.dataset.role, point);
-            map.closePopup();
-          });
-        });
-      });
+      m.on('popupopen', (e) => populateNearest(point, layer, e.popup));
       m.addTo(group);
     });
     group.addTo(map);
