@@ -121,6 +121,44 @@
     .leaflet-popup-content table { border-collapse: collapse; }
     .leaflet-popup-content td { padding: 1px 0; vertical-align: top; }
     .leaflet-popup-content td.k { color: #6b6b66; padding-right: 10px; white-space: nowrap; }
+
+    /* Drawer handle tabs (only shown on phones). The tab is a child of each
+       panel so it slides with it; it stays poking into view when the panel is
+       parked off-screen. */
+    .drawer-tab { display: none; }
+    @media (max-width: 640px) {
+      .drawer-tab {
+        display: flex; align-items: center; justify-content: center;
+        position: absolute; top: 6px; width: 30px; height: 38px;
+        background: #fff; border: 1px solid #cfcfc8; color: #1D9E75;
+        font-size: 22px; line-height: 1; cursor: pointer; padding: 0;
+        box-shadow: 0 1px 5px rgba(0,0,0,.22); z-index: 1;
+      }
+      .drawer-tab-left  { right: -31px; border-radius: 0 9px 9px 0; border-left: none; }
+      .drawer-tab-right { left: -31px;  border-radius: 9px 0 0 9px; border-right: none; }
+
+      /* Layers selector → left drawer (park body off-left, keep the tab showing) */
+      .leaflet-control-layers {
+        position: relative;
+        transform: translateX(calc(-100% - 10px));
+        transition: transform .28s ease;
+        max-width: 62vw;
+      }
+      .leaflet-control-layers.drawer-open { transform: translateX(0); }
+      .leaflet-control-layers-list { max-height: 66vh; overflow-y: auto; }
+      .leaflet-control-layers .drawer-tab::after { content: '\203A'; }         /* › in */
+      .leaflet-control-layers.drawer-open .drawer-tab::after { content: '\2039'; } /* ‹ out */
+
+      /* Directions panel → right drawer (park body off-right, keep the tab showing) */
+      #route-panel {
+        right: 0; width: 210px;
+        transform: translateX(100%);
+        transition: transform .28s ease;
+      }
+      #route-panel.drawer-open { transform: translateX(0); }
+      #route-panel .drawer-tab::after { content: '\2039'; }                    /* ‹ in */
+      #route-panel.drawer-open .drawer-tab::after { content: '\203A'; }        /* › out */
+    }
   </style>
 </head>
 <body>

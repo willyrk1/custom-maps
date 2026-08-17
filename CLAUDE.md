@@ -67,6 +67,15 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   suppress new entries, and records `lastHash` so it never re-pushes the state
   it just applied. `commitHash(h, false)` on load normalizes the entry-point URL
   without adding an entry.
+- **Mobile drawers**: on `max-width:640px` the layers selector and the
+  directions panel park off-screen (`transform: translateX`) with a `.drawer-tab`
+  handle poking in; tapping toggles `.drawer-open` (→ `translateX(0)`).
+  `addDrawerTab` in `app.js` injects the tabs. Desktop is untouched — the tab
+  `display:flex` and all transforms live only inside the media query; outside it
+  `.drawer-tab { display:none }` and panels have no transform. Note: CSS
+  transitions don't animate in the non-displayed preview pane (no compositing),
+  so verify drawer motion by toggling `.drawer-open` with transitions disabled,
+  or on a real device.
 - **Layers selector**: each overlay label carries a `.legend-chip` showing the
   brand glyph so you can tell which glyph is which. `clusterIcon` uses the same
   glyphs. `maxClusterRadius` is 80 (default) so close-but-not-touching pins merge

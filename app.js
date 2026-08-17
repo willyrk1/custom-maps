@@ -302,6 +302,20 @@ function applyState(state) {
   lastHash = buildHash(); // this state is now current; don't re-push it
 }
 
+// Adds a slide-in handle tab to a panel (used on phones — see the mobile CSS).
+// side 'left' = layers drawer, 'right' = directions drawer. The tab is a child
+// so it slides with the panel and toggles the .drawer-open class.
+function addDrawerTab(el, side) {
+  if (!el || el.querySelector(':scope > .drawer-tab')) return;
+  const tab = document.createElement('button');
+  tab.type = 'button';
+  tab.className = 'drawer-tab drawer-tab-' + side;
+  tab.setAttribute('aria-label', side === 'left' ? 'Show or hide layers' : 'Show or hide directions');
+  el.appendChild(tab);
+  L.DomEvent.disableClickPropagation(tab);
+  L.DomEvent.on(tab, 'click', () => el.classList.toggle('drawer-open'));
+}
+
 // Adds an "All / None" row atop the layers control. Clicking drives the real
 // checkboxes (via .click()) so Leaflet toggles each layer and stays in sync.
 function addAllNoneToggle(ctrl) {
@@ -384,6 +398,10 @@ function initMap(data) {
   layersCtrl.getContainer()
     .querySelectorAll('.leaflet-control-layers-overlays input[type=checkbox]')
     .forEach((cb, i) => { if (layerIndex[i]) layerIndex[i].cb = cb; });
+
+  // On phones both panels park off-screen; a handle tab slides each in/out.
+  addDrawerTab(layersCtrl.getContainer(), 'left');
+  addDrawerTab(document.getElementById('route-panel'), 'right');
 
   document.getElementById('btn-clear').addEventListener('click', () => {
     setSlot('start', null);
