@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Knoxville house hunt</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+    integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc="
+    crossorigin=""
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+    integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA="
+    crossorigin=""
+  />
+
+  <style>
+    :root { --brand: #1D9E75; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    #map { position: absolute; inset: 0; }
+
+    /* Password gate */
+    #gate {
+      position: fixed; inset: 0; z-index: 2000;
+      background: #f4f5f3; display: flex; align-items: center; justify-content: center;
+    }
+    #gate .card {
+      background: #fff; border: 1px solid #e2e2dd; border-radius: 14px;
+      padding: 28px 26px; width: 320px; max-width: 90vw; box-shadow: 0 10px 40px rgba(0,0,0,.08);
+    }
+    #gate h1 { font-size: 18px; margin: 0 0 4px; }
+    #gate p { font-size: 13px; color: #6b6b66; margin: 0 0 18px; line-height: 1.5; }
+    #gate label { font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
+    #gate input[type=password] {
+      width: 100%; height: 40px; padding: 0 12px; font-size: 15px;
+      border: 1px solid #d3d3cc; border-radius: 8px; outline: none;
+    }
+    #gate input[type=password]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(29,158,117,.15); }
+    #gate .row { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; font-size: 13px; color: #444; }
+    #gate button {
+      width: 100%; height: 40px; margin-top: 16px; border: none; border-radius: 8px;
+      background: var(--brand); color: #fff; font-size: 15px; font-weight: 500; cursor: pointer;
+    }
+    #gate button:disabled { opacity: .6; cursor: default; }
+    #gate .err { color: #b3261e; font-size: 13px; margin-top: 12px; min-height: 16px; }
+
+    /* Routing panel */
+    #route-panel {
+      position: absolute; top: 10px; right: 10px; z-index: 1000;
+      background: #fff; border: 1px solid #e2e2dd; border-radius: 12px;
+      padding: 12px 14px; width: 230px; box-shadow: 0 4px 18px rgba(0,0,0,.12); font-size: 13px;
+    }
+    #route-panel h2 { font-size: 14px; margin: 0 0 10px; font-weight: 600; }
+    .slot { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .slot .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+    .slot .txt { flex: 1; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .slot .txt.empty { color: #9a9a95; }
+    #route-result { margin-top: 8px; padding-top: 10px; border-top: 1px solid #eee; }
+    #route-result .big { font-size: 20px; font-weight: 600; }
+    #route-result .sub { color: #6b6b66; }
+    #route-panel .actions { display: flex; gap: 8px; margin-top: 10px; }
+    #route-panel .actions button {
+      flex: 1; height: 30px; border: 1px solid #d3d3cc; background: #fff; border-radius: 7px;
+      font-size: 12px; cursor: pointer;
+    }
+    .popup-btns { display: flex; gap: 6px; margin-top: 8px; }
+    .popup-btns button {
+      flex: 1; height: 28px; border: 1px solid #d3d3cc; background: #fafafa; border-radius: 6px;
+      font-size: 12px; cursor: pointer;
+    }
+    /* Glyph chip shown next to each brand name in the layers selector */
+    .legend-chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 16px; border-radius: 5px; vertical-align: middle;
+      color: #fff; font-size: 10px; font-weight: 700; margin-right: 3px;
+    }
+    /* keep the checkbox on the same centered line as the chip + label */
+    .leaflet-control-layers-overlays label input { vertical-align: middle; }
+
+    /* All / None row in the layers control */
+    .layers-allnone {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 6px 6px; margin-bottom: 4px;
+      border-bottom: 1px solid #e2e2dd; font-size: 12px;
+    }
+    .layers-allnone button {
+      border: 1px solid #d3d3cc; background: #fff; border-radius: 6px;
+      padding: 2px 10px; font-size: 12px; cursor: pointer; color: #333;
+    }
+    .layers-allnone button:hover { background: #f4f5f3; }
+    .layers-allnone span { color: #bbb; }
+
+    /* Clustered pins shown as a box of brand chips (breaks apart on zoom) */
+    .cluster-wrap { background: none; border: none; }
+    .cluster-box {
+      background: #fff; border: 1px solid #cfcfc8; border-radius: 9px;
+      padding: 3px; display: flex; flex-wrap: wrap; gap: 3px;
+      max-width: 92px; box-shadow: 0 2px 6px rgba(0,0,0,.22);
+    }
+    .cluster-chip {
+      width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #fff;
+      color: #fff; font-size: 9px; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cluster-more { font-size: 10px; color: #555; align-self: center; padding: 0 3px; }
+
+    .leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
+    .leaflet-popup-content .pname { font-weight: 600; margin-bottom: 4px; }
+    .leaflet-popup-content table { border-collapse: collapse; }
+    .leaflet-popup-content td { padding: 1px 0; vertical-align: top; }
+    .leaflet-popup-content td.k { color: #6b6b66; padding-right: 10px; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="route-panel" hidden>
+    <h2>Directions</h2>
+    <div class="slot"><span class="dot" style="background:#1D9E75"></span><span class="txt empty" id="slot-start">Click a pin → Start here</span></div>
+    <div class="slot"><span class="dot" style="background:#b3261e"></span><span class="txt empty" id="slot-end">Click a pin → End here</span></div>
+    <div id="route-result" hidden>
+      <div class="big" id="route-time">—</div>
+      <div class="sub" id="route-dist"></div>
+    </div>
+    <div class="actions">
+      <button id="btn-clear">Clear</button>
+    </div>
+  </div>
+
+  <div id="gate">
+    <div class="card">
+      <h1>Knoxville house hunt</h1>
+      <p>This map is private. Enter the shared password to view it.</p>
+      <form id="gate-form">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" autofocus />
+        <div class="row"><input id="remember" type="checkbox" checked /> <label for="remember" style="margin:0">Remember on this device</label></div>
+        <button id="unlock" type="submit">Unlock</button>
+        <div class="err" id="gate-err"></div>
+      </form>
+    </div>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script
+    src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+    integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg="
+    crossorigin=""
+  ></script>
+  <script
+    src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+    integrity="sha256-lTN8BYPNcvhjd8DFDOWPtNbYWcQEz94SPEYHCaEDl7k="
+    crossorigin=""
+  ></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "center": [35.9606, -83.9207],
+  "zoom": 12,
+  "layers": [
+    {
+      "id": "homes",
+      "name": "Candidate homes",
+      "color": "#1D9E75",
+      "glyph": "H",
+      "points": [
+        {
+          "name": "1420 Maple Ridge Dr",
+          "lat": 35.9721,
+          "lng": -83.9012,
+          "details": { "Price": "$389k", "Beds": "3", "Baths": "2", "Notes": "Big backyard, needs a new roof soon" }
+        },
+        {
+          "name": "88 Oakhaven Ln",
+          "lat": 35.9402,
+          "lng": -83.9505,
+          "details": { "Price": "$415k", "Beds": "4", "Baths": "2.5", "Notes": "Great kitchen, busy road" }
+        }
+      ]
+    },
+    {
+      "id": "restaurants",
+      "name": "Restaurants",
+      "color": "#D85A30",
+      "glyph": "F",
+      "points": [
+        {
+          "name": "Olive Garden - Turkey Creek",
+          "lat": 35.9088,
+          "lng": -84.0946,
+          "iconUrl": "",
+          "details": { "Cuisine": "Italian", "Notes": "Example location — replace with a real one" }
+        },
+        {
+          "name": "Olive Garden - Kingston Pike",
+          "lat": 35.9285,
+          "lng": -84.0201,
+          "iconUrl": "",
+          "details": { "Cuisine": "Italian" }
+        }
+      ]
+    },
+    {
+      "id": "shopping",
+      "name": "Shopping",
+      "color": "#0071CE",
+      "glyph": "S",
+      "points": [
+        {
+          "name": "Walmart Supercenter - Chapman Hwy",
+          "lat": 35.9145,
+          "lng": -83.9330,
+          "iconUrl": "",
+          "details": { "Type": "Groceries + general", "Notes": "Example location — replace with a real one" }
+        },
+        {
+          "name": "Walmart Supercenter - Turkey Creek",
+          "lat": 35.9060,
+          "lng": -84.1010,
+          "iconUrl": "",
+          "details": { "Type": "Groceries + general" }
+        }
+      ]
+    }
+  ]
+}

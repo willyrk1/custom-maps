@@ -1,0 +1,411 @@
+/* Knoxville house-hunt map.
+   1. Password gate decrypts data.encrypted in the browser (AES-256-GCM / PBKDF2).
+   2. Renders layered, toggleable markers on a Leaflet map.
+   3. Click any two pins to route between them (distance + time) via OSRM. */
+
+const STORAGE_KEY = 'knox-map-key';
+const DATA_URL = 'data.encrypted';
+const PLAINTEXT_URL = 'data.json';
+
+// On localhost we skip the password entirely and read the plaintext data.json
+// (git-ignored, never deployed). The live site has no data.json, so it always
+// falls through to the encrypted + password flow.
+function isLocalHost() {
+  return ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
+}
+
+/* ---------- crypto ---------- */
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function decryptData(payload, password) {
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey(
+    'raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']
+  );
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: b64ToBytes(payload.salt), iterations: payload.iterations, hash: 'SHA-256' },
+    baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+  );
+  const plainBuf = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: b64ToBytes(payload.iv) }, key, b64ToBytes(payload.data)
+  );
+  return JSON.parse(new TextDecoder().decode(plainBuf));
+}
+
+/* ---------- gate flow ---------- */
+let encryptedPayload = null;
+
+async function loadPayload() {
+  if (encryptedPayload) return encryptedPayload;
+  const res = await fetch(DATA_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Could not load ${DATA_URL} (${res.status})`);
+  encryptedPayload = await res.json();
+  return encryptedPayload;
+}
+
+function revealMap(data) {
+  const gate = document.getElementById('gate');
+  if (gate) gate.remove();
+  document.getElementById('route-panel').hidden = false;
+  initMap(data);
+}
+
+async function tryUnlock(password, remember) {
+  const payload = await loadPayload();
+  const data = await decryptData(payload, password); // throws if wrong password
+  if (remember) localStorage.setItem(STORAGE_KEY, password);
+  revealMap(data);
+}
+
+// Local dev: load plaintext data.json and skip the gate. Returns false if there
+// is no data.json (e.g. on the deployed site), so we can fall back to the gate.
+async function tryLocalPlaintext() {
+  const res = await fetch(PLAINTEXT_URL, { cache: 'no-store' });
+  if (!res.ok) return false;
+  revealMap(await res.json());
+  return true;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('gate-form');
+  const err = document.getElementById('gate-err');
+
+  // Localhost: skip the gate and use plaintext data.json if present.
+  if (isLocalHost()) {
+    tryLocalPlaintext().catch(() => false).then(loaded => {
+      if (loaded) return;
+      // No data.json locally — fall back to remembered password if any.
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) tryUnlock(saved, true).catch(() => localStorage.removeItem(STORAGE_KEY));
+    });
+    return;
+  }
+
+  // Deployed: auto-unlock if we remembered a password that still works.
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    tryUnlock(saved, true).catch(() => {
+      localStorage.removeItem(STORAGE_KEY); // stale/wrong — fall back to prompt
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    const btn = document.getElementById('unlock');
+    const pw = document.getElementById('pw').value;
+    const remember = document.getElementById('remember').checked;
+    if (!pw) { err.textContent = 'Enter the password.'; return; }
+    btn.disabled = true; btn.textContent = 'Unlocking…';
+    try {
+      await tryUnlock(pw, remember);
+    } catch (ex) {
+      err.textContent = (ex && ex.name === 'OperationError')
+        ? 'Wrong password. Try again.'
+        : 'Could not unlock: ' + (ex.message || ex);
+      btn.disabled = false; btn.textContent = 'Unlock';
+    }
+  });
+});
+
+/* ---------- map ---------- */
+let map;
+const routeState = { start: null, end: null, line: null };
+let layerIndex = []; // [{ id, group }] for persisting which layers are shown
+
+function makeIcon(layer, point) {
+  if (point.iconUrl) {
+    return L.icon({ iconUrl: point.iconUrl, iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -30] });
+  }
+  const glyph = layer.glyph || '';
+  const html =
+    `<div style="background:${layer.color};width:26px;height:26px;border-radius:50%;` +
+    `border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);display:flex;` +
+    `align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">${glyph}</div>`;
+  return L.divIcon({ html, className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14] });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function popupHtml(point) {
+  let rows = '';
+  if (point.details) {
+    for (const [k, v] of Object.entries(point.details)) {
+      rows += `<tr><td class="k">${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`;
+    }
+  }
+  return `<div class="pname">${escapeHtml(point.name)}</div>` +
+    (rows ? `<table>${rows}</table>` : '') +
+    `<div class="popup-btns">` +
+    `<button data-role="start">Start here</button>` +
+    `<button data-role="end">End here</button></div>`;
+}
+
+function setSlot(which, point, autoCompute = true) {
+  routeState[which] = point;
+  const el = document.getElementById(which === 'start' ? 'slot-start' : 'slot-end');
+  el.textContent = point ? point.name : (which === 'start' ? 'Click a pin → Start here' : 'Click a pin → End here');
+  el.classList.toggle('empty', !point);
+  if (map) updateHash();
+  if (autoCompute && routeState.start && routeState.end) computeRoute();
+}
+
+function clearRoute() {
+  if (routeState.line) { map.removeLayer(routeState.line); routeState.line = null; }
+  document.getElementById('route-result').hidden = true;
+}
+
+async function computeRoute(fit = true) {
+  clearRoute();
+  const a = routeState.start, b = routeState.end;
+  const timeEl = document.getElementById('route-time');
+  const distEl = document.getElementById('route-dist');
+  document.getElementById('route-result').hidden = false;
+  timeEl.textContent = 'Routing…'; distEl.textContent = '';
+
+  const url = `https://router.project-osrm.org/route/v1/driving/` +
+    `${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.code !== 'Ok' || !json.routes.length) throw new Error('No route found');
+    const route = json.routes[0];
+    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]); // lng,lat -> lat,lng
+    routeState.line = L.polyline(coords, { color: '#378ADD', weight: 5, opacity: 0.85 }).addTo(map);
+    if (fit) map.fitBounds(routeState.line.getBounds(), { padding: [60, 60] });
+
+    const mins = Math.round(route.duration / 60);
+    const miles = (route.distance / 1609.34).toFixed(1);
+    timeEl.textContent = `${mins} min drive`;
+    distEl.textContent = `${miles} mi · ${escapeHtml(a.name)} → ${escapeHtml(b.name)}`;
+  } catch (ex) {
+    timeEl.textContent = 'Routing failed';
+    distEl.textContent = ex.message || String(ex);
+  }
+}
+
+// When several pins overlap they collapse into one box showing each brand's
+// chip, spaced evenly. Zooming in splits the boxes until pins stand alone.
+function clusterIcon(cluster) {
+  const kids = cluster.getAllChildMarkers();
+  const MAX = 6;
+  let html = '<div class="cluster-box">';
+  kids.slice(0, MAX).forEach(m => {
+    html += `<span class="cluster-chip" style="background:${m.brandColor}">${escapeHtml(m.brandGlyph)}</span>`;
+  });
+  if (kids.length > MAX) html += `<span class="cluster-more">+${kids.length - MAX}</span>`;
+  html += '</div>';
+  return L.divIcon({ html, className: 'cluster-wrap', iconSize: null });
+}
+
+// Deep-linking: keep zoom + center in the URL hash (#zoom/lat/lng, OSM-style),
+// plus an optional route (&r=slat,slng,elat,elng,startName,endName), so a reload
+// or shared link reopens the same view AND the plotted route.
+function parseHash() {
+  const raw = location.hash.replace(/^#/, '');
+  if (!raw) return null;
+  const parts = raw.split('&');
+  const v = parts[0].match(/^(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+  if (!v) return null;
+  const out = { zoom: +v[1], lat: +v[2], lng: +v[3] };
+  const hPart = parts.find(p => p.startsWith('h='));
+  out.hidden = hPart ? hPart.slice(2).split(',').filter(Boolean) : [];
+  const rPart = parts.find(p => p.startsWith('r='));
+  if (rPart) {
+    const f = rPart.slice(2).split(',');
+    if (f.length >= 4 && f.slice(0, 4).every(n => n !== '' && !isNaN(+n))) {
+      out.route = {
+        start: { name: f[4] ? decodeURIComponent(f[4]) : 'Start', lat: +f[0], lng: +f[1] },
+        end:   { name: f[5] ? decodeURIComponent(f[5]) : 'End',   lat: +f[2], lng: +f[3] }
+      };
+    }
+  }
+  return out;
+}
+function buildHash() {
+  const c = map.getCenter();
+  let h = `#${map.getZoom()}/${c.lat.toFixed(5)}/${c.lng.toFixed(5)}`;
+  const hidden = layerIndex.filter(x => !map.hasLayer(x.group)).map(x => x.id);
+  if (hidden.length) h += `&h=${hidden.join(',')}`;
+  const s = routeState.start, e = routeState.end;
+  if (s && e) {
+    h += `&r=${s.lat.toFixed(5)},${s.lng.toFixed(5)},${e.lat.toFixed(5)},${e.lng.toFixed(5)}` +
+         `,${encodeURIComponent(s.name)},${encodeURIComponent(e.name)}`;
+  }
+  return h;
+}
+
+// Each settled change (pan/zoom, layer toggle, route) becomes ONE history
+// entry, so Back steps through them one at a time. Rapid bursts — All/None,
+// or a zoom that fires both zoomend and moveend — coalesce via the debounce.
+// Suppressed (applyingState) while we apply a state from Back/Forward/paste so
+// re-applying doesn't spawn new entries. `commitHash` sets the URL and records
+// lastHash so we never push a duplicate.
+let historyTimer = null;
+let applyingState = false;
+let lastHash = '';
+function commitHash(h, push) {
+  if (push) history.pushState(null, '', h);
+  else history.replaceState(null, '', h);
+  lastHash = h;
+}
+function updateHash() {
+  if (applyingState) return;
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(() => {
+    const h = buildHash();
+    if (h !== lastHash) commitHash(h, true);
+  }, 250);
+}
+
+// Apply a parsed hash state to the already-running map. Used when the URL
+// changes live — a pasted deep link, or Back/Forward — so it takes effect
+// without a reload. History writes are suppressed during the apply.
+function applyState(state) {
+  if (!state || !map) return;
+  applyingState = true;
+  map.setView([state.lat, state.lng], state.zoom, { animate: false });
+
+  // Layer visibility: drive the real checkboxes so the control stays in sync.
+  const hidden = new Set(state.hidden || []);
+  layerIndex.forEach(x => {
+    if (!x.cb) return;
+    const wantVisible = !hidden.has(x.id);
+    if (x.cb.checked !== wantVisible) x.cb.click();
+  });
+
+  // Route: only touch it if it actually changed.
+  const key = r => r ? `${r.start.lat},${r.start.lng},${r.end.lat},${r.end.lng}` : '';
+  const cur = (routeState.start && routeState.end)
+    ? key({ start: routeState.start, end: routeState.end }) : '';
+  if (key(state.route) !== cur) {
+    if (state.route) {
+      setSlot('start', state.route.start, false);
+      setSlot('end', state.route.end, false);
+      computeRoute(false);
+    } else {
+      setSlot('start', null);
+      setSlot('end', null);
+      clearRoute();
+    }
+  }
+
+  applyingState = false;
+  lastHash = buildHash(); // this state is now current; don't re-push it
+}
+
+// Adds an "All / None" row atop the layers control. Clicking drives the real
+// checkboxes (via .click()) so Leaflet toggles each layer and stays in sync.
+function addAllNoneToggle(ctrl) {
+  const container = ctrl.getContainer();
+  const list = container.querySelector('.leaflet-control-layers-overlays');
+  const bar = L.DomUtil.create('div', 'layers-allnone');
+  bar.innerHTML = '<button type="button" data-act="all">All</button>' +
+                  '<span>/</span>' +
+                  '<button type="button" data-act="none">None</button>';
+  list.parentNode.insertBefore(bar, list); // sit just above the overlay list
+  L.DomEvent.disableClickPropagation(bar);
+  bar.addEventListener('click', (e) => {
+    const act = e.target.dataset.act;
+    if (!act) return;
+    const want = act === 'all';
+    list.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      if (cb.checked !== want) cb.click();
+    });
+  });
+}
+
+function initMap(data) {
+  map = L.map('map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Restore the view from the URL if present, else use the data's default.
+  const h = parseHash();
+  if (h) map.setView([h.lat, h.lng], h.zoom);
+  else map.setView(data.center || [35.9606, -83.9207], data.zoom || 12);
+  map.on('moveend zoomend', updateHash);
+
+  // One parent cluster so different brands combine into the same box.
+  const parent = L.markerClusterGroup({
+    maxClusterRadius: 80,          // merge pins whose icons visually overlap
+    showCoverageOnHover: false,
+    spiderfyDistanceMultiplier: 1.4,
+    iconCreateFunction: clusterIcon
+  }).addTo(map);
+
+  const overlays = {};
+  layerIndex = [];
+  (data.layers || []).forEach(layer => {
+    const clustered = layer.id !== 'homes';                 // homes stay always-visible
+    const group = clustered ? L.featureGroup.subGroup(parent) : L.layerGroup();
+    layerIndex.push({ id: layer.id, group });
+    (layer.points || []).forEach(point => {
+      const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point) });
+      m.brandColor = layer.color;
+      m.brandGlyph = layer.glyph || '';
+      m.bindPopup(popupHtml(point));
+      m.on('popupopen', (e) => {
+        const node = e.popup.getElement();
+        node.querySelectorAll('.popup-btns button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            setSlot(btn.dataset.role, point);
+            map.closePopup();
+          });
+        });
+      });
+      m.addTo(group);
+    });
+    group.addTo(map);
+    overlays[`<span class="legend-chip" style="background:${layer.color}">${escapeHtml(layer.glyph || '')}</span> ${escapeHtml(layer.name)}`] = group;
+  });
+
+  // Apply the URL's hidden-layer set before the control is built, so its
+  // checkboxes render already-unchecked for hidden layers.
+  const hiddenSet = new Set((h && h.hidden) || []);
+  layerIndex.forEach(x => { if (hiddenSet.has(x.id)) map.removeLayer(x.group); });
+
+  const layersCtrl = L.control.layers(null, overlays, { collapsed: false, position: 'topleft' }).addTo(map);
+  addAllNoneToggle(layersCtrl);
+  map.on('overlayadd overlayremove', updateHash); // persist toggles to the URL
+
+  // Remember each layer's checkbox (same order as layerIndex) so we can re-sync
+  // the control when a new URL is applied live.
+  layersCtrl.getContainer()
+    .querySelectorAll('.leaflet-control-layers-overlays input[type=checkbox]')
+    .forEach((cb, i) => { if (layerIndex[i]) layerIndex[i].cb = cb; });
+
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    setSlot('start', null);
+    setSlot('end', null);
+    clearRoute();
+  });
+
+  // Live-apply the URL when it changes externally: paste fires hashchange;
+  // Back/Forward fire popstate (and hashchange). applyState is idempotent, so
+  // the double-fire on Back/Forward is harmless.
+  window.addEventListener('hashchange', () => applyState(parseHash()));
+  window.addEventListener('popstate', () => applyState(parseHash()));
+
+  // Restore a deep-linked route, if the URL had one. Don't refit the view —
+  // the deep-linked zoom/center wins.
+  if (h && h.route) {
+    setSlot('start', h.route.start, false);
+    setSlot('end', h.route.end, false);
+    computeRoute(false);
+  }
+
+  // Normalize the entry-point URL to the full state without adding a history
+  // entry, and seed lastHash so the first real change pushes a fresh entry.
+  commitHash(buildHash(), false);
+}

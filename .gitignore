@@ -1,0 +1,4 @@
+# Never commit the plaintext data or your password — only the encrypted blob ships.
+data.json
+*.local
+.DS_Store
