@@ -7,7 +7,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // Provide lat/lng to skip geocoding (Nominatim can't resolve newer streets).
 const HOMES = [
   { q: '7933 Maynardville Pike, Knoxville, TN' },
-  { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614 }
+  { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614 },
+  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683 }
 ];
 
 const BRANDS = [
