@@ -486,6 +486,9 @@ function initMap(data) {
     setSlot('start', null);
     setSlot('end', null);
     clearRoute();
+    // On phones, slide the now-empty directions drawer back off-screen.
+    if (window.matchMedia('(max-width: 640px)').matches)
+      document.getElementById('route-panel').classList.remove('drawer-open');
   });
 
   // Live-apply the URL when it changes externally: paste fires hashchange;
