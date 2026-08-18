@@ -105,18 +105,15 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   or on a real device.
 - **Layers selector**: each overlay label carries a `.legend-chip` showing the
   brand glyph so you can tell which glyph is which. `clusterIcon` uses the same
-  glyphs. `maxClusterRadius` is 130 (see the fractional-zoom note below) so
-  close-but-not-touching pins merge instead of a lone pin sitting on top of a
-  cluster box.
+  glyphs. `maxClusterRadius` is 80 so close-but-not-touching store pins merge
+  instead of a lone pin sitting on top of a cluster box.
 - **Home labels**: a home point's optional `label` renders as a permanent
   Leaflet tooltip (`.home-label`) beside the pin — the nicknames (Mill Ridge,
   Poplar Farms, Irwin Oaks). The tooltip is bound `interactive: true`, so
   clicking the label opens the same popup as clicking the pin. Only homes have
   labels; popups/directions still show the full address. Set labels in
-  `build-data.js`'s `HOMES`. When a home is bundled into a cluster (no standalone
-  pin to hang the label on — e.g. Irwin Oaks sits 0.3mi from a Walgreens so it
-  clusters even at z11.5), `clusterIcon` reads the child marker's `homeLabel` and
-  paints the nickname beside the box (`.cluster-home-label`) so it stays named.
+  `build-data.js`'s `HOMES`. Homes aren't clustered (see below), so the label is
+  always beside the pin at the home's real location.
 - **Default startup view**: `data.json`'s `center`/`zoom` (used when the URL has
   no hash). The user's preferred default is `35.97426,-84.01657` @ z11.5. Note
   `build-data.js` recomputes these from the homes on rebuild, so re-set them
@@ -130,22 +127,19 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
 - **Clustering**: overlapping pins collapse into a box of brand chips
   (`clusterIcon` in `app.js`) and split apart on zoom. All brands share one
   `markerClusterGroup`; each brand is a `featureGroup.subGroup` of it so layer
-  toggles still work. Homes are a subgroup too, so they bundle into the same
-  boxes as nearby stores (an `H` chip appears in the cluster); when a home splits
-  out at higher zoom its permanent label reappears beside the pin. Tune
-  `maxClusterRadius` to change how eagerly pins merge.
-- **Fractional-zoom crowding / why `maxClusterRadius` is 130**:
-  leaflet.markercluster decides clustering at `Math.round(zoom)`. With our
-  `zoomSnap: 0.5` a half-step like 11.5 rounds *up* to 12, so the map shows z12's
-  looser clustering while rendering at 11.5's tighter spacing — a home pin that's
-  just outside a store cluster at z12 then renders *on top of* that cluster's box
-  at 11.5. A big radius (130) absorbs the home into the box (a named pill via
-  `.cluster-home-label`) instead of leaving it as a loose overlapping pin, which
-  keeps z11.5/z12 clean. Don't "fix" this by patching markercluster to floor the
-  zoom (swapping `Math.round`→`Math.floor` around its methods) — it corrupts the
-  merge/split animation state and produces *more* overlaps. Remaining box-on-box
-  touches at some higher half-steps are inherent to the chip-box being wider than
-  the radius (they happen at integer zooms too) and are not the home-pin issue.
+  toggles still work. Tune `maxClusterRadius` to change how eagerly pins merge.
+- **Homes are NOT clustered (they must stay on their real address)**: a clustered
+  marker is drawn at its cluster's *centroid*, which drags a home's pin away from
+  its true coordinates (e.g. Poplar Farms drifting out of Solway). So homes live
+  in a plain `L.layerGroup()` (not a `subGroup` of the cluster), always shown at
+  their exact `lat`/`lng`, with `zIndexOffset: 1000` so the pin + label sit above
+  any nearby store cluster box and stay legible. Consequence: when a home is close
+  to stores (Mill Ridge ~0.8mi, Irwin Oaks ~0.3mi from a Walgreens), at z11.5 its
+  pin visually overlaps the store box — that's accepted, because the alternative
+  (clustering the home) misplaces it, which is worse on a house-hunting map. Do
+  NOT re-add homes to the cluster to "fix" that overlap. (Also tried and rejected:
+  patching markercluster to floor the zoom instead of round — it corrupts the
+  merge/split animation and makes overlaps worse.)
 - **OSRM** public server is free but rate-limited/best-effort. To harden, switch
   `computeRoute()` in `app.js` to the Mapbox Directions API with a token.
 - Times are typical estimates — OSRM here is not traffic-aware.

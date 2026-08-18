@@ -287,10 +287,6 @@ function clusterIcon(cluster) {
   });
   if (kids.length > MAX) html += `<span class="cluster-more">+${kids.length - MAX}</span>`;
   html += '</div>';
-  // If a candidate home is bundled into this cluster, name it beside the box so
-  // it stays identifiable even when it has no standalone pin/label.
-  const home = kids.find(m => m.homeLabel);
-  if (home) html += `<span class="cluster-home-label">${escapeHtml(home.homeLabel)}</span>`;
   return L.divIcon({ html, className: 'cluster-wrap', iconSize: null });
 }
 
@@ -440,11 +436,7 @@ function initMap(data) {
 
   // One parent cluster so different brands combine into the same box.
   const parent = L.markerClusterGroup({
-    // Big radius so a candidate home near stores gets absorbed into the cluster
-    // box (shown as a named pill) instead of rendering as a loose pin that
-    // overlaps the box — the half-step zoom (round() picks the looser upper
-    // integer) otherwise leaves it crowded on top. Keeps z11.5/z12 clean.
-    maxClusterRadius: 130,
+    maxClusterRadius: 80,          // merge pins whose icons visually overlap
     showCoverageOnHover: false,
     spiderfyDistanceMultiplier: 1.4,
     iconCreateFunction: clusterIcon
@@ -454,19 +446,21 @@ function initMap(data) {
   layerIndex = [];
   allPoints = [];
   (data.layers || []).forEach(layer => {
-    // Every layer (homes included) is a subgroup of the one cluster parent, so
-    // homes bundle into the same chip boxes as nearby stores. A home's permanent
-    // label rides its H marker, so it reappears beside the pin once it splits out.
-    const group = L.featureGroup.subGroup(parent);
+    // Stores cluster; homes do NOT. A clustered marker is drawn at its cluster's
+    // centroid, which would drag a home's pin away from its real address — so
+    // homes live in a plain layerGroup at their exact coordinates, always shown,
+    // and sit above the store markers (zIndexOffset) so their label stays legible
+    // even when a nearby store cluster is close by.
+    const isHomes = layer.id === 'homes';
+    const group = isHomes ? L.layerGroup() : L.featureGroup.subGroup(parent);
     layerIndex.push({ id: layer.id, group });
     const layerMeta = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' };
     (layer.points || []).forEach(point => {
       allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, layer: layerMeta });
-      const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point) });
+      const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point), zIndexOffset: isHomes ? 1000 : 0 });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
       if (point.label) {
-        m.homeLabel = point.label;                     // used by clusterIcon when bundled
         // interactive:true → clicking the label opens the popup, same as the pin.
         m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: 'home-label', interactive: true });
       }
