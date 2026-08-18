@@ -11,9 +11,20 @@ Static site, deployable to GitHub Pages. Click any two pins → driving distance
   Web Crypto), renders layered markers, and does click-to-route through OSRM's
   public server.
 - `encrypt-data.js` — Node tool that encrypts `data.json` → `data.encrypted`.
+- `build-data.js` — Node tool that regenerates `data.json`: geocodes the homes
+  (Census geocoder resolves newer streets that Nominatim can't; homes with
+  explicit `lat`/`lng` skip geocoding), pulls brand locations from OpenStreetMap
+  via Overpass (with mirror-endpoint fallback), dedupes near-duplicate pins,
+  keeps the 2 nearest of each brand to each home, and recomputes `center`/`zoom`.
+  Edit its `HOMES` (each has `q`, optional `lat`/`lng`, and `label`) and `BRANDS`
+  (key, label, name-match regex, color, glyph) arrays to add homes or brands.
 - `data.example.json` — template for the map data (layers → points).
-- `data.json` — **plaintext, git-ignored, never committed.** Local only.
+- `data.json` — **plaintext, git-ignored, never committed.** Local only. Points
+  carry `name`, `lat`, `lng`, optional `details`, `iconUrl`, and (homes) `label`.
 - `data.encrypted` — the only data file that ships. Ciphertext, safe to publish.
+
+Live at https://willyrk1.github.io/custom-maps/ (public repo — safe because only
+ciphertext ships; the password holder is the user, Claude never has it).
 
 ## Privacy model (important)
 
@@ -29,11 +40,13 @@ bypassable and must never replace this.
 ## Editing the data
 
 ```bash
-cp data.example.json data.json     # first time only
-# edit data.json — add homes/restaurants/shops with lat/lng, details, iconUrl
+node build-data.js                  # regenerate data.json from HOMES/BRANDS (or edit by hand)
+# re-set center/zoom afterward if you want a specific default (build-data recomputes it)
 node encrypt-data.js "the-password" # writes data.encrypted
 ```
-Then commit `data.encrypted` (not `data.json`).
+Then commit `data.encrypted` (not `data.json`). **Claude does not have the
+password** — when the data changes, ask the user to run `encrypt-data.js`
+themselves, then commit/push the resulting `data.encrypted`.
 
 ## Running locally
 
@@ -88,9 +101,14 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   brand glyph so you can tell which glyph is which. `clusterIcon` uses the same
   glyphs. `maxClusterRadius` is 80 (default) so close-but-not-touching pins merge
   instead of a lone pin sitting on top of a cluster box.
+- **Home labels**: a home point's optional `label` renders as a permanent
+  Leaflet tooltip (`.home-label`) beside the pin — the nicknames (Mill Ridge,
+  Poplar Farms, Irwin, Whisper Ridge). Only homes have labels; popups/directions
+  still show the full address. Set labels in `build-data.js`'s `HOMES`.
 - **Default startup view**: `data.json`'s `center`/`zoom` (used when the URL has
-  no hash). Note `build-data.js` recomputes these from the homes on rebuild, so
-  re-set them afterward if you want a specific default.
+  no hash). The user's preferred default is `35.97426,-84.01657` @ z12. Note
+  `build-data.js` recomputes these from the homes on rebuild, so re-set them
+  afterward.
 - **All / None**: `addAllNoneToggle` adds a row to the layers control that
   drives the real checkboxes via `.click()`, so Leaflet stays in sync.
 - **Clustering**: overlapping pins collapse into a box of brand chips
