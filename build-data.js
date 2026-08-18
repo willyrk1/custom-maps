@@ -6,10 +6,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Provide lat/lng to skip geocoding (Nominatim can't resolve newer streets).
 const HOMES = [
-  { q: '7933 Maynardville Pike, Knoxville, TN', label: 'Mill Ridge' },
+  { q: '7933 Maynardville Pike, Knoxville, TN', lat: 36.0612528, lng: -83.9243393, label: 'Mill Ridge' },
   { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614, label: 'Poplar Farms' },
-  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin' },
-  { q: '5904 Whisper Ridge Ln, Corryton, TN', lat: 36.09250604811, lng: -83.830881759853, label: 'Whisper Ridge' }
+  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks' }
 ];
 
 const BRANDS = [
@@ -23,6 +22,9 @@ const BRANDS = [
   { key: 'homesense',     label: 'HomeSense',       match: /home\s*sense/i,        color: '#E4572E', glyph: 'HS' },
   { key: 'kohls',         label: "Kohl's",          match: /kohl/i,                color: '#1a1a1a', glyph: 'Ko' },
   { key: 'target',        label: 'Target',          match: /target/i,              color: '#E4002B', glyph: 'Tg' },
+  { key: 'publix',        label: 'Publix',          match: /publix/i,              color: '#008542', glyph: 'Px' },
+  { key: 'homedepot',     label: 'Home Depot',      match: /home\s*depot/i,        color: '#F96302', glyph: 'HD' },
+  { key: 'lowes',         label: "Lowe's",          match: /lowe'?s/i,             color: '#004990', glyph: 'Lw' },
   { key: 'texasroadhouse',label: 'Texas Roadhouse', match: /texas\s*roadhouse/i,   color: '#B71234', glyph: 'TR' },
   { key: 'glorydays',     label: 'Glory Days',      match: /glory\s*days/i,        color: '#1D3F6E', glyph: 'GD' }
 ];
@@ -75,7 +77,7 @@ async function geocode(q) {
 
 async function overpass() {
   const bbox = '35.80,-84.30,36.20,-83.55'; // Knoxville metro (Halls -> Turkey Creek)
-  const re = 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Kohl|Texas Roadhouse|Glory Days|Target';
+  const re = 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Home ?Depot|Lowe|Kohl|Texas Roadhouse|Glory Days|Target|Publix';
   const q = `[out:json][timeout:90];
     ( nwr["name"~"${re}",i](${bbox}); );
     out center tags;`;

@@ -103,18 +103,24 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   instead of a lone pin sitting on top of a cluster box.
 - **Home labels**: a home point's optional `label` renders as a permanent
   Leaflet tooltip (`.home-label`) beside the pin — the nicknames (Mill Ridge,
-  Poplar Farms, Irwin, Whisper Ridge). Only homes have labels; popups/directions
+  Poplar Farms, Irwin Oaks). Only homes have labels; popups/directions
   still show the full address. Set labels in `build-data.js`'s `HOMES`.
 - **Default startup view**: `data.json`'s `center`/`zoom` (used when the URL has
-  no hash). The user's preferred default is `35.97426,-84.01657` @ z12. Note
+  no hash). The user's preferred default is `35.97426,-84.01657` @ z11.5. Note
   `build-data.js` recomputes these from the homes on rebuild, so re-set them
   afterward.
+- **Fractional zoom**: the map is created with `zoomSnap: 0.5, zoomDelta: 0.5`
+  (in `initMap`), so zoom moves in half-steps (11, 11.5, 12 …) — z11 was too far
+  out and z12 too close on the user's laptop. `parseHash`/`buildHash` already
+  handle decimal zooms, so deep links round-trip fine.
 - **All / None**: `addAllNoneToggle` adds a row to the layers control that
   drives the real checkboxes via `.click()`, so Leaflet stays in sync.
 - **Clustering**: overlapping pins collapse into a box of brand chips
   (`clusterIcon` in `app.js`) and split apart on zoom. All brands share one
   `markerClusterGroup`; each brand is a `featureGroup.subGroup` of it so layer
-  toggles still work. Homes are a plain `layerGroup` (never clustered). Tune
+  toggles still work. Homes are a subgroup too, so they bundle into the same
+  boxes as nearby stores (an `H` chip appears in the cluster); when a home splits
+  out at higher zoom its permanent label reappears beside the pin. Tune
   `maxClusterRadius` to change how eagerly pins merge.
 - **OSRM** public server is free but rate-limited/best-effort. To harden, switch
   `computeRoute()` in `app.js` to the Mapbox Directions API with a token.

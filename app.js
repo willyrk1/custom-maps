@@ -422,7 +422,7 @@ function addAllNoneToggle(ctrl) {
 }
 
 function initMap(data) {
-  map = L.map('map');
+  map = L.map('map', { zoomSnap: 0.5, zoomDelta: 0.5 });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
@@ -446,8 +446,10 @@ function initMap(data) {
   layerIndex = [];
   allPoints = [];
   (data.layers || []).forEach(layer => {
-    const clustered = layer.id !== 'homes';                 // homes stay always-visible
-    const group = clustered ? L.featureGroup.subGroup(parent) : L.layerGroup();
+    // Every layer (homes included) is a subgroup of the one cluster parent, so
+    // homes bundle into the same chip boxes as nearby stores. A home's permanent
+    // label rides its H marker, so it reappears beside the pin once it splits out.
+    const group = L.featureGroup.subGroup(parent);
     layerIndex.push({ id: layer.id, group });
     const layerMeta = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' };
     (layer.points || []).forEach(point => {
