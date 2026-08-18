@@ -8,7 +8,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const HOMES = [
   { q: '7933 Maynardville Pike, Knoxville, TN' },
   { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614 },
-  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683 }
+  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683 },
+  { q: '5904 Whisper Ridge Ln, Corryton, TN', lat: 36.09250604811, lng: -83.830881759853 }
 ];
 
 const BRANDS = [
@@ -21,6 +22,7 @@ const BRANDS = [
   { key: 'homegoods',     label: 'HomeGoods',       match: /home\s*goods/i,        color: '#00A0A6', glyph: 'HG' },
   { key: 'homesense',     label: 'HomeSense',       match: /home\s*sense/i,        color: '#E4572E', glyph: 'HS' },
   { key: 'kohls',         label: "Kohl's",          match: /kohl/i,                color: '#1a1a1a', glyph: 'Ko' },
+  { key: 'target',        label: 'Target',          match: /target/i,              color: '#E4002B', glyph: 'Tg' },
   { key: 'texasroadhouse',label: 'Texas Roadhouse', match: /texas\s*roadhouse/i,   color: '#B71234', glyph: 'TR' },
   { key: 'glorydays',     label: 'Glory Days',      match: /glory\s*days/i,        color: '#1D3F6E', glyph: 'GD' }
 ];
@@ -73,15 +75,28 @@ async function geocode(q) {
 
 async function overpass() {
   const bbox = '35.80,-84.30,36.20,-83.55'; // Knoxville metro (Halls -> Turkey Creek)
-  const re = 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Kohl|Texas Roadhouse|Glory Days';
+  const re = 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Kohl|Texas Roadhouse|Glory Days|Target';
   const q = `[out:json][timeout:90];
     ( nwr["name"~"${re}",i](${bbox}); );
     out center tags;`;
-  const r = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST', headers: { ...UA, 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'data=' + encodeURIComponent(q)
-  });
-  return (await r.json()).elements || [];
+  // The main server is often busy/rate-limited; fall through to mirrors.
+  const endpoints = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://lz4.overpass-api.de/api/interpreter',
+    'https://z.overpass-api.de/api/interpreter'
+  ];
+  for (const ep of endpoints) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const r = await fetch(ep, { method: 'POST', headers: { ...UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(q) });
+        const text = await r.text();
+        if (!r.ok || text.trim().startsWith('<')) { console.error(`  overpass ${ep} try ${attempt}: HTTP ${r.status} (busy), retrying`); await sleep(4000); continue; }
+        return (JSON.parse(text).elements) || [];
+      } catch (e) { console.error(`  overpass ${ep} try ${attempt}: ${e.message}`); await sleep(3000); }
+    }
+  }
+  throw new Error('All Overpass endpoints unavailable — try again shortly');
 }
 
 (async () => {
