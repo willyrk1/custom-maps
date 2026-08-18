@@ -59,6 +59,12 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
 
 ## Gotchas
 
+- **Cache-busting `app.js`**: `index.html` loads it as `app.js?v=N`. **Bump `N`
+  whenever you change `app.js`**, otherwise browsers (and the preview pane) keep
+  running the previously-cached copy — you'll see new `data.encrypted` but stale
+  code, which looks like clustering/labels "not working" until a hard refresh.
+  GitHub Pages serves with `max-age=600`, so without the bump a stale copy can
+  linger ~10 min after a deploy.
 - **SRI hashes**: if you bump the Leaflet version (or the `markercluster` /
   `featuregroup.subgroup` plugin versions) in `index.html`, recompute the
   `integrity="sha256-..."` values or the browser blocks the script. Compute with
@@ -103,8 +109,13 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   instead of a lone pin sitting on top of a cluster box.
 - **Home labels**: a home point's optional `label` renders as a permanent
   Leaflet tooltip (`.home-label`) beside the pin — the nicknames (Mill Ridge,
-  Poplar Farms, Irwin Oaks). Only homes have labels; popups/directions
-  still show the full address. Set labels in `build-data.js`'s `HOMES`.
+  Poplar Farms, Irwin Oaks). The tooltip is bound `interactive: true`, so
+  clicking the label opens the same popup as clicking the pin. Only homes have
+  labels; popups/directions still show the full address. Set labels in
+  `build-data.js`'s `HOMES`. When a home is bundled into a cluster (no standalone
+  pin to hang the label on — e.g. Irwin Oaks sits 0.3mi from a Walgreens so it
+  clusters even at z11.5), `clusterIcon` reads the child marker's `homeLabel` and
+  paints the nickname beside the box (`.cluster-home-label`) so it stays named.
 - **Default startup view**: `data.json`'s `center`/`zoom` (used when the URL has
   no hash). The user's preferred default is `35.97426,-84.01657` @ z11.5. Note
   `build-data.js` recomputes these from the homes on rebuild, so re-set them

@@ -79,6 +79,7 @@
     .home-label.leaflet-tooltip {
       background: #1D9E75; color: #fff; border: none; border-radius: 6px;
       padding: 2px 7px; font-size: 12px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+      cursor: pointer;
     }
     .home-label.leaflet-tooltip-right::before { border-right-color: #1D9E75; }
     .home-label.leaflet-tooltip-left::before { border-left-color: #1D9E75; }
@@ -118,7 +119,15 @@
     .layers-allnone span { color: #bbb; }
 
     /* Clustered pins shown as a box of brand chips (breaks apart on zoom) */
-    .cluster-wrap { background: none; border: none; }
+    .cluster-wrap { background: none; border: none; position: relative; }
+    /* Nickname shown beside a cluster box when a candidate home is bundled in it.
+       Absolutely positioned so it doesn't shift the box off its map point. */
+    .cluster-home-label {
+      position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
+      margin-left: 6px; background: #1D9E75; color: #fff; border-radius: 6px;
+      padding: 2px 7px; font-size: 12px; font-weight: 600; white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
     .cluster-box {
       background: #fff; border: 1px solid #cfcfc8; border-radius: 9px;
       padding: 3px; display: flex; flex-wrap: wrap; gap: 3px;
@@ -221,6 +230,7 @@
     integrity="sha256-lTN8BYPNcvhjd8DFDOWPtNbYWcQEz94SPEYHCaEDl7k="
     crossorigin=""
   ></script>
-  <script src="app.js"></script>
+  <!-- Bump ?v= whenever app.js changes so browsers don't run a stale cached copy. -->
+  <script src="app.js?v=4"></script>
 </body>
 </html>

@@ -287,6 +287,10 @@ function clusterIcon(cluster) {
   });
   if (kids.length > MAX) html += `<span class="cluster-more">+${kids.length - MAX}</span>`;
   html += '</div>';
+  // If a candidate home is bundled into this cluster, name it beside the box so
+  // it stays identifiable even when it has no standalone pin/label.
+  const home = kids.find(m => m.homeLabel);
+  if (home) html += `<span class="cluster-home-label">${escapeHtml(home.homeLabel)}</span>`;
   return L.divIcon({ html, className: 'cluster-wrap', iconSize: null });
 }
 
@@ -457,7 +461,11 @@ function initMap(data) {
       const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point) });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
-      if (point.label) m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: 'home-label' });
+      if (point.label) {
+        m.homeLabel = point.label;                     // used by clusterIcon when bundled
+        // interactive:true → clicking the label opens the popup, same as the pin.
+        m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: 'home-label', interactive: true });
+      }
       m.bindPopup(popupHtml(point));
       m.on('popupopen', (e) => populateNearest(point, layer, e.popup));
       m.addTo(group);
