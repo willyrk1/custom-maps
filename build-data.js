@@ -6,10 +6,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Provide lat/lng to skip geocoding (Nominatim can't resolve newer streets).
 const HOMES = [
-  { q: '7933 Maynardville Pike, Knoxville, TN' },
-  { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614 },
-  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683 },
-  { q: '5904 Whisper Ridge Ln, Corryton, TN', lat: 36.09250604811, lng: -83.830881759853 }
+  { q: '7933 Maynardville Pike, Knoxville, TN', label: 'Mill Ridge' },
+  { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614, label: 'Poplar Farms' },
+  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin' },
+  { q: '5904 Whisper Ridge Ln, Corryton, TN', lat: 36.09250604811, lng: -83.830881759853, label: 'Whisper Ridge' }
 ];
 
 const BRANDS = [
@@ -132,7 +132,7 @@ async function overpass() {
 
   const layers = [{
     id: 'homes', name: 'Candidate homes', color: '#1D9E75', glyph: 'H',
-    points: homes.map(h => ({ name: h.q.replace(', TN',''), lat: h.lat, lng: h.lng,
+    points: homes.map(h => ({ name: h.q.replace(', TN',''), label: h.label, lat: h.lat, lng: h.lng,
       details: { Status: 'Candidate' } }))
   }];
 

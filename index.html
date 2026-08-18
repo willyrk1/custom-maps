@@ -75,6 +75,14 @@
       flex: 1; height: 30px; border: 1px solid #d3d3cc; background: #fff; border-radius: 7px;
       font-size: 12px; cursor: pointer;
     }
+    /* Permanent nickname label next to a home pin */
+    .home-label.leaflet-tooltip {
+      background: #1D9E75; color: #fff; border: none; border-radius: 6px;
+      padding: 2px 7px; font-size: 12px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+    .home-label.leaflet-tooltip-right::before { border-right-color: #1D9E75; }
+    .home-label.leaflet-tooltip-left::before { border-left-color: #1D9E75; }
+
     /* Nearest-places list inside a pin popup */
     .near-list { margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px; max-height: 230px; overflow-y: auto; min-width: 210px; }
     .near-hd { font-size: 10px; color: #6b6b66; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 4px; }

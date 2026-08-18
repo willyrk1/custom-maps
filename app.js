@@ -455,6 +455,7 @@ function initMap(data) {
       const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point) });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
+      if (point.label) m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: 'home-label' });
       m.bindPopup(popupHtml(point));
       m.on('popupopen', (e) => populateNearest(point, layer, e.popup));
       m.addTo(group);
