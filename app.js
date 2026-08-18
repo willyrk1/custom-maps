@@ -461,8 +461,16 @@ function initMap(data) {
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
       if (point.label) {
-        // interactive:true → clicking the label opens the popup, same as the pin.
+        // Clicking the label opens the popup, same as clicking the pin. We wire the
+        // click explicitly (interactive:true alone doesn't reliably forward it).
         m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: 'home-label', interactive: true });
+        m.on('tooltipopen', (e) => {
+          const el = e.tooltip.getElement();
+          if (el && !el._clickWired) {
+            el._clickWired = true;
+            L.DomEvent.on(el, 'click', (ev) => { L.DomEvent.stop(ev); m.openPopup(); });
+          }
+        });
       }
       m.bindPopup(popupHtml(point));
       m.on('popupopen', (e) => populateNearest(point, layer, e.popup));
@@ -490,6 +498,9 @@ function initMap(data) {
   // On phones both panels park off-screen; a handle tab slides each in/out.
   addDrawerTab(layersCtrl.getContainer(), 'left');
   addDrawerTab(document.getElementById('route-panel'), 'right');
+
+  // Escape closes an open pin popup, same as its X button.
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') map.closePopup(); });
 
   document.getElementById('btn-clear').addEventListener('click', () => {
     setSlot('start', null);
