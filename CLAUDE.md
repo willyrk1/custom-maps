@@ -105,8 +105,9 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   or on a real device.
 - **Layers selector**: each overlay label carries a `.legend-chip` showing the
   brand glyph so you can tell which glyph is which. `clusterIcon` uses the same
-  glyphs. `maxClusterRadius` is 80 (default) so close-but-not-touching pins merge
-  instead of a lone pin sitting on top of a cluster box.
+  glyphs. `maxClusterRadius` is 130 (see the fractional-zoom note below) so
+  close-but-not-touching pins merge instead of a lone pin sitting on top of a
+  cluster box.
 - **Home labels**: a home point's optional `label` renders as a permanent
   Leaflet tooltip (`.home-label`) beside the pin — the nicknames (Mill Ridge,
   Poplar Farms, Irwin Oaks). The tooltip is bound `interactive: true`, so
@@ -133,6 +134,18 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   boxes as nearby stores (an `H` chip appears in the cluster); when a home splits
   out at higher zoom its permanent label reappears beside the pin. Tune
   `maxClusterRadius` to change how eagerly pins merge.
+- **Fractional-zoom crowding / why `maxClusterRadius` is 130**:
+  leaflet.markercluster decides clustering at `Math.round(zoom)`. With our
+  `zoomSnap: 0.5` a half-step like 11.5 rounds *up* to 12, so the map shows z12's
+  looser clustering while rendering at 11.5's tighter spacing — a home pin that's
+  just outside a store cluster at z12 then renders *on top of* that cluster's box
+  at 11.5. A big radius (130) absorbs the home into the box (a named pill via
+  `.cluster-home-label`) instead of leaving it as a loose overlapping pin, which
+  keeps z11.5/z12 clean. Don't "fix" this by patching markercluster to floor the
+  zoom (swapping `Math.round`→`Math.floor` around its methods) — it corrupts the
+  merge/split animation state and produces *more* overlaps. Remaining box-on-box
+  touches at some higher half-steps are inherent to the chip-box being wider than
+  the radius (they happen at integer zooms too) and are not the home-pin issue.
 - **OSRM** public server is free but rate-limited/best-effort. To harden, switch
   `computeRoute()` in `app.js` to the Mapbox Directions API with a token.
 - Times are typical estimates — OSRM here is not traffic-aware.

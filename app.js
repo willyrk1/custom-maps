@@ -440,7 +440,11 @@ function initMap(data) {
 
   // One parent cluster so different brands combine into the same box.
   const parent = L.markerClusterGroup({
-    maxClusterRadius: 80,          // merge pins whose icons visually overlap
+    // Big radius so a candidate home near stores gets absorbed into the cluster
+    // box (shown as a named pill) instead of rendering as a loose pin that
+    // overlaps the box — the half-step zoom (round() picks the looser upper
+    // integer) otherwise leaves it crowded on top. Keeps z11.5/z12 clean.
+    maxClusterRadius: 130,
     showCoverageOnHover: false,
     spiderfyDistanceMultiplier: 1.4,
     iconCreateFunction: clusterIcon
