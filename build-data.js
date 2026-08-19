@@ -30,6 +30,33 @@ const BRANDS = [
   { key: 'glorydays',     label: 'Glory Days',      match: /glory\s*days/i,        color: '#1D3F6E', glyph: 'GD' }
 ];
 
+// Real street addresses for stores OpenStreetMap has no addr:* tags for (looked
+// up by hand). Keyed by "lat,lng" rounded to 4 decimals; applied during build so
+// they survive regeneration. Add a line here after looking one up.
+const ADDRESS_OVERRIDES = {
+  '35.9421,-84.0924': '9137 Middlebrook Pike',      // CVS
+  '36.0849,-83.9253': '4500 E Emory Rd',            // CVS (Halls Crossroads)
+  '36.0283,-83.9275': '4864 N Broadway St',         // CVS (Fountain City)
+  '36.1204,-83.8542': '7425 Tazewell Pike',         // Walgreens (Corryton)
+  '35.9417,-84.0954': '9200 Middlebrook Pike',      // Walgreens
+  '36.0730,-83.9269': '6920 Maynardville Pike',     // Walgreens (Halls)
+  '35.8771,-84.1655': '11530 Kingston Pike',        // Kohl's (Farragut/Turkey Creek)
+  '36.0012,-83.7786': '1510 Cracker Barrel Lane',   // Cracker Barrel (Strawberry Plains)
+  '35.9036,-84.1512': '11001 Turkey Dr',            // Texas Roadhouse (Turkey Creek)
+  '35.9277,-84.0352': '120 Morrell Rd',             // Texas Roadhouse (West Knox)
+  '36.0297,-83.8658': '3071 Kinzel Way'             // Texas Roadhouse (East)
+};
+// Match by distance (not exact key) so a small OSM coordinate drift between runs
+// can't drop an override. Stores are far enough apart that 0.1mi is unambiguous.
+const OVERRIDE_PTS = Object.entries(ADDRESS_OVERRIDES).map(([k, addr]) => {
+  const [lat, lng] = k.split(',').map(Number);
+  return { lat, lng, addr };
+});
+function overrideAddr(lat, lng) {
+  const hit = OVERRIDE_PTS.find(o => haversineMi(o, { lat, lng }) < 0.1);
+  return hit ? hit.addr : null;
+}
+
 function haversineMi(a, b) {
   const R = 3958.8, toR = d => d * Math.PI / 180;
   const dLat = toR(b.lat - a.lat), dLng = toR(b.lng - a.lng);
@@ -124,6 +151,9 @@ async function overpass() {
     const name = (e.tags && (e.tags.name || e.tags.brand)) || '';
     const brand = BRANDS.find(b => b.match.test(name));
     if (!brand) continue;
+    // Skip roads/waterways/rail whose NAME merely contains a brand word — e.g.
+    // "Lowes Ferry Road", "Kohlston Road", "Kohlmier Drive" — they aren't stores.
+    if (e.tags.highway || e.tags.waterway || e.tags.railway) continue;
     const lat = e.lat ?? (e.center && e.center.lat);
     const lng = e.lon ?? (e.center && e.center.lon);
     if (lat == null) continue;
@@ -157,7 +187,7 @@ async function overpass() {
       id: b.key, name: b.label, color: b.color, glyph: b.glyph,
       points: list.map(p => {
         const t = p.tags || {};
-        const addr = [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+        const addr = overrideAddr(p.lat, p.lng) || [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
         const details = {};
         if (addr) details.Address = addr;
         details['Nearest home'] = p.dist.toFixed(1) + ' mi';

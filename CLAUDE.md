@@ -18,6 +18,12 @@ Static site, deployable to GitHub Pages. Click any two pins → driving distance
   keeps the 2 nearest of each brand to each home, and recomputes `center`/`zoom`.
   Edit its `HOMES` (each has `q`, optional `lat`/`lng`, and `label`) and `BRANDS`
   (key, label, name-match regex, color, glyph) arrays to add homes or brands.
+  Skips elements with a `highway`/`waterway`/`railway` tag so a road whose NAME
+  contains a brand word (e.g. "Lowes Ferry Road", "Kohlston Road") isn't picked
+  up as a fake store. `ADDRESS_OVERRIDES` (keyed by `lat,lng`, matched within
+  0.1mi so small OSM drift can't drop it) supplies real street addresses for
+  stores OSM has no `addr:*` tags for — look one up once, add a line, and it
+  survives every rebuild.
 - `data.example.json` — template for the map data (layers → points).
 - `data.json` — **plaintext, git-ignored, never committed.** Local only. Points
   carry `name`, `lat`, `lng`, optional `details`, `iconUrl`, and (homes) `label`.
