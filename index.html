@@ -183,6 +183,10 @@
     .cmp-table th, .cmp-table td { padding: 3px 7px; text-align: center; }
     .cmp-rail { position: sticky; left: 0; background: #fff; z-index: 1; }
     .cmp-head { font-weight: 600; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid #eee; }
+    .cmp-head[data-house] { cursor: pointer; user-select: none; }
+    .cmp-head[data-house]:hover { background: #f4f5f3; }
+    .cmp-head.cmp-sorted { color: #1D9E75; }
+    .cmp-arrow { font-size: 10px; }
     .cmp-cell { min-width: 66px; }
     .cmp-time { color: #1D9E75; font-weight: 700; background: #f4f5f3; border: 1px solid #e2e2dd; border-radius: 6px; padding: 4px 8px; cursor: pointer; white-space: nowrap; }
     .cmp-time:hover { background: #e9ebe7; }
@@ -284,6 +288,6 @@
     crossorigin=""
   ></script>
   <!-- Bump ?v= whenever app.js changes so browsers don't run a stale cached copy. -->
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>

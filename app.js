@@ -266,7 +266,7 @@ async function populateNearest(src, srcLayer, popup) {
 function homeLabel(idx) { const p = homes[idx].point; return p.label || p.name; }
 
 function openCompare(homeIdx) {
-  compareState = { houses: [homeIdx], selecting: true }; // start by picking a 2nd home
+  compareState = { houses: [homeIdx], selecting: true, sort: null }; // start by picking a 2nd home
   document.getElementById('compare-panel').hidden = false;
   renderCompare();
 }
@@ -288,8 +288,26 @@ function renderCompare() {
   houses.forEach(ensureHouseTimes);
 
   const head = '<tr><th class="cmp-rail"></th>' +
-    houses.map(idx => `<th class="cmp-head">${escapeHtml(homeLabel(idx))}</th>`).join('') + '</tr>';
-  const body = brands.map(b => {
+    houses.map(idx => {
+      const active = compareState.sort && compareState.sort.house === idx;
+      const arrow = active ? (compareState.sort.dir === 1 ? ' ▲' : ' ▼') : '';
+      return `<th class="cmp-head${active ? ' cmp-sorted' : ''}" data-house="${idx}" ` +
+        `title="Sort by drive time from ${escapeHtml(homeLabel(idx))}">` +
+        `${escapeHtml(homeLabel(idx))}<span class="cmp-arrow">${arrow}</span></th>`;
+    }).join('') + '</tr>';
+
+  // Row order: default = data order; if a house header was clicked, sort brands by
+  // that house's drive time (missing/loading data sinks to the bottom).
+  let orderedBrands = brands;
+  const sort = compareState.sort, sortHt = sort && houseTimes[sort.house];
+  if (sort && sortHt && sortHt !== 'loading') {
+    orderedBrands = brands.slice().sort((a, b) => {
+      const va = sortHt[a.id] ? sortHt[a.id]._min : Infinity;
+      const vb = sortHt[b.id] ? sortHt[b.id]._min : Infinity;
+      return (va - vb) * sort.dir;
+    });
+  }
+  const body = orderedBrands.map(b => {
     const cells = houses.map(idx => {
       const ht = houseTimes[idx];
       if (!ht || ht === 'loading') return '<td class="cmp-cell"><span class="cmp-loading">…</span></td>';
@@ -323,6 +341,12 @@ function renderCompare() {
     computeRoute(true);
     if (window.matchMedia('(max-width: 640px)').matches)
       document.getElementById('route-panel').classList.add('drawer-open');
+  }));
+  grid.querySelectorAll('.cmp-head[data-house]').forEach(th => th.addEventListener('click', () => {
+    const idx = +th.dataset.house;
+    if (compareState.sort && compareState.sort.house === idx) compareState.sort.dir *= -1; // toggle asc/desc
+    else compareState.sort = { house: idx, dir: 1 };                                       // sort by this house, nearest first
+    renderCompare();
   }));
   const addBtn = grid.querySelector('.cmp-add-btn');
   if (addBtn) addBtn.addEventListener('click', () => { compareState.selecting = true; renderCompare(); });
