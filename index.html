@@ -29,6 +29,9 @@
     :root { --brand: #1D9E75; }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    /* Stop mobile Chrome/Safari from auto-inflating text on rotate to landscape
+       (font boosting), which blew up the fonts until you pinch-zoomed back. */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     #map { position: absolute; inset: 0; }
 
     /* Password gate */
