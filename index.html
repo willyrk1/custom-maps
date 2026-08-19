@@ -138,6 +138,42 @@
     .leaflet-popup-content td { padding: 1px 0; vertical-align: top; }
     .leaflet-popup-content td.k { color: #6b6b66; padding-right: 10px; white-space: nowrap; }
 
+    /* "Compare homes" button in a candidate-home popup header */
+    .cmp-btn {
+      margin: 6px 0 2px; border: 1px solid #1D9E75; background: #1D9E75; color: #fff;
+      border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .cmp-btn:hover { background: #178a63; }
+
+    /* House-to-house comparison panel (a bottom bar so its grid has room to
+       scroll sideways). Rows = brands, columns = candidate homes. */
+    #compare-panel {
+      position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 1100;
+      background: #fff; border: 1px solid #e2e2dd; border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.16); font-size: 13px;
+      max-height: 55vh; display: flex; flex-direction: column;
+    }
+    .cmp-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-bottom: 1px solid #eee; font-weight: 600;
+    }
+    #cmp-close { border: none; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #6b6b66; padding: 0 4px; }
+    .cmp-grid { overflow: auto; padding: 8px 12px; display: flex; align-items: flex-start; gap: 12px; }
+    .cmp-table { border-collapse: collapse; }
+    .cmp-table th, .cmp-table td { padding: 3px 7px; text-align: center; }
+    .cmp-rail { position: sticky; left: 0; background: #fff; z-index: 1; }
+    .cmp-head { font-weight: 600; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid #eee; }
+    .cmp-cell { min-width: 66px; }
+    .cmp-time { color: #1D9E75; font-weight: 700; background: #f4f5f3; border: 1px solid #e2e2dd; border-radius: 6px; padding: 4px 8px; cursor: pointer; white-space: nowrap; }
+    .cmp-time:hover { background: #e9ebe7; }
+    .cmp-loading { color: #9a9a95; }
+    .cmp-add { display: flex; flex-direction: column; gap: 6px; min-width: 118px; padding-top: 24px; }
+    .cmp-add-btn, .cmp-pick { border: 1px solid #d3d3cc; background: #fff; border-radius: 7px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; text-align: left; }
+    .cmp-add-btn { color: #1D9E75; font-weight: 600; }
+    .cmp-pick:hover, .cmp-add-btn:hover { background: #f4f5f3; }
+    .cmp-picker-hd { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #6b6b66; }
+    .cmp-none { font-size: 12px; color: #9a9a95; }
+
     /* Drawer handle tabs (only shown on phones). The tab is a child of each
        panel so it slides with it; it stays poking into view when the panel is
        parked off-screen. */
@@ -193,6 +229,11 @@
     </div>
   </div>
 
+  <div id="compare-panel" hidden>
+    <div class="cmp-hd"><span id="cmp-title">Compare homes</span><button id="cmp-close" type="button" aria-label="Close comparison">×</button></div>
+    <div class="cmp-grid"></div>
+  </div>
+
   <div id="gate">
     <div class="card">
       <h1>Knoxville house hunt</h1>
@@ -223,6 +264,6 @@
     crossorigin=""
   ></script>
   <!-- Bump ?v= whenever app.js changes so browsers don't run a stale cached copy. -->
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

@@ -118,6 +118,10 @@ let map;
 const routeState = { start: null, end: null, line: null };
 let layerIndex = []; // [{ id, group }] for persisting which layers are shown
 let allPoints = []; // [{ name, lat, lng, layer:{id,name,color,glyph} }] for nearest-places lists
+let homes = [];      // [{ idx, point, marker }] candidate homes, for the compare panel
+let brands = [];     // [{ id, name, color, glyph }] store brands = row order in the compare grid
+let compareState = null; // { houses:number[], selecting:boolean } while the compare panel is open
+let houseTimes = {}; // homeIdx -> { brandId: pick } | 'loading' (each home's nearest of every brand)
 
 function makeIcon(layer, point) {
   if (point.iconUrl) {
@@ -136,14 +140,15 @@ function escapeHtml(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function popupHtml(point) {
+function popupHtml(point, isHome) {
   let rows = '';
   if (point.details) {
     for (const [k, v] of Object.entries(point.details)) {
       rows += `<tr><td class="k">${escapeHtml(k)}</td><td>${escapeHtml(v)}</td></tr>`;
     }
   }
-  return `<div class="pname">${escapeHtml(point.name)}</div>` +
+  const cmp = isHome ? `<div><button class="cmp-btn" type="button">⇄ Compare homes</button></div>` : '';
+  return `<div class="pname">${escapeHtml(point.name)}</div>` + cmp +
     (rows ? `<table>${rows}</table>` : '') +
     `<div class="near-list"><div class="near-loading">Finding nearest places…</div></div>`;
 }
@@ -164,20 +169,18 @@ function bearing(a, b) {
 }
 function angleDiff(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
 
-// Fills a pin's popup with the nearest place of each other type (driving time
-// from OSRM's table service — one request for all), plus a 2nd of a type when
-// it's both close and in a clearly different direction. Tapping a row plots it.
-async function populateNearest(src, srcLayer, popup) {
-  const el = popup.getElement();
-  const listEl = el && el.querySelector('.near-list');
-  if (!listEl) return;
+// One OSRM table request (source = src → every candidate) returns per-candidate
+// driving time/distance/bearing. Candidates are all points NOT in srcLayerId and
+// not at src's own location. Falls back to a straight-line estimate (~30 mph) if
+// OSRM is slow/unavailable. Returns fresh copies so callers can compute per-source
+// times independently (the compare panel does this for several homes at once).
+async function computeCandTimes(src, srcLayerId) {
+  const cands = allPoints
+    .filter(p => p.layer.id !== srcLayerId &&
+      !(Math.abs(p.lat - src.lat) < 1e-9 && Math.abs(p.lng - src.lng) < 1e-9))
+    .map(p => ({ name: p.name, lat: p.lat, lng: p.lng, layer: p.layer }));
+  if (!cands.length) return cands;
 
-  const cands = allPoints.filter(p => p.layer.id !== srcLayer.id &&
-    !(Math.abs(p.lat - src.lat) < 1e-9 && Math.abs(p.lng - src.lng) < 1e-9));
-  if (!cands.length) { listEl.innerHTML = '<div class="near-empty">Nothing else to compare.</div>'; return; }
-
-  // One OSRM table request: source 0 → every candidate. Fall back to a
-  // straight-line estimate (~30 mph) if the routing server is unavailable.
   let durs = null, dists = null;
   try {
     const coords = [src, ...cands].map(p => `${p.lng},${p.lat}`).join(';');
@@ -199,6 +202,28 @@ async function populateNearest(src, srcLayer, popup) {
     }
     p._bear = bearing(src, p);
   });
+  return cands;
+}
+
+// Each home's nearest store of EVERY brand (one per brand) → { brandId: pick }.
+// Used to fill a column of the compare grid.
+async function nearestByBrand(src) {
+  const cands = await computeCandTimes(src, 'homes');
+  const out = {};
+  cands.forEach(p => { const cur = out[p.layer.id]; if (!cur || p._min < cur._min) out[p.layer.id] = p; });
+  return out;
+}
+
+// Fills a pin's popup with the nearest place of each other type (driving time
+// from OSRM's table service — one request for all), plus a 2nd of a type when
+// it's both close and in a clearly different direction. Tapping a row plots it.
+async function populateNearest(src, srcLayer, popup) {
+  const el = popup.getElement();
+  const listEl = el && el.querySelector('.near-list');
+  if (!listEl) return;
+
+  const cands = await computeCandTimes(src, srcLayer.id);
+  if (!cands.length) { listEl.innerHTML = '<div class="near-empty">Nothing else to compare.</div>'; return; }
 
   const byBrand = {};
   cands.forEach(p => (byBrand[p.layer.id] ||= []).push(p));
@@ -231,6 +256,79 @@ async function populateNearest(src, srcLayer, popup) {
         document.getElementById('route-panel').classList.add('drawer-open');
     });
   });
+}
+
+/* ---------- house-to-house compare panel ----------
+   Rows = brands, columns = candidate homes; each cell is that home's drive time
+   to its OWN nearest store of that brand (aligned so you compare like with like).
+   PHASE 1: compareState is in-memory only; the browser Back button is not yet
+   wired to these steps (that is Phase 2). */
+function homeLabel(idx) { const p = homes[idx].point; return p.label || p.name; }
+
+function openCompare(homeIdx) {
+  compareState = { houses: [homeIdx], selecting: true }; // start by picking a 2nd home
+  document.getElementById('compare-panel').hidden = false;
+  renderCompare();
+}
+function closeCompare() {
+  compareState = null;
+  document.getElementById('compare-panel').hidden = true;
+}
+// Lazily fetch (and cache) a home's nearest-of-every-brand, re-rendering when ready.
+function ensureHouseTimes(idx) {
+  if (houseTimes[idx]) return; // resolved or already loading
+  houseTimes[idx] = 'loading';
+  nearestByBrand(homes[idx].point).then(res => { houseTimes[idx] = res; if (compareState) renderCompare(); });
+}
+
+function renderCompare() {
+  if (!compareState) return;
+  const grid = document.querySelector('#compare-panel .cmp-grid');
+  const houses = compareState.houses;
+  houses.forEach(ensureHouseTimes);
+
+  const head = '<tr><th class="cmp-rail"></th>' +
+    houses.map(idx => `<th class="cmp-head">${escapeHtml(homeLabel(idx))}</th>`).join('') + '</tr>';
+  const body = brands.map(b => {
+    const cells = houses.map(idx => {
+      const ht = houseTimes[idx];
+      if (!ht || ht === 'loading') return '<td class="cmp-cell"><span class="cmp-loading">…</span></td>';
+      const pick = ht[b.id];
+      if (!pick) return '<td class="cmp-cell">—</td>';
+      return `<td class="cmp-cell"><button class="cmp-time" data-house="${idx}" data-brand="${escapeHtml(b.id)}" ` +
+        `title="${escapeHtml(pick.name)}">${pick._est ? '~' : ''}${Math.round(pick._min)} min</button></td>`;
+    }).join('');
+    return `<tr><td class="cmp-rail"><span class="legend-chip" style="background:${b.color}">${escapeHtml(b.glyph)}</span></td>${cells}</tr>`;
+  }).join('');
+  const table = `<table class="cmp-table"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+
+  // Trailing column: the Compare button, or (while selecting) a picker of the
+  // homes not yet added. Compare sits further right as more homes are added.
+  const remaining = homes.map(h => h.idx).filter(idx => !houses.includes(idx));
+  let add = '';
+  if (compareState.selecting) {
+    add = `<div class="cmp-add"><div class="cmp-picker-hd">Add a home</div>` +
+      (remaining.length
+        ? remaining.map(idx => `<button class="cmp-pick" data-idx="${idx}">${escapeHtml(homeLabel(idx))}</button>`).join('')
+        : '<div class="cmp-none">No more homes</div>') + `</div>`;
+  } else if (remaining.length) {
+    add = `<div class="cmp-add"><button class="cmp-add-btn" type="button">+ Compare</button></div>`;
+  }
+  grid.innerHTML = table + add;
+
+  grid.querySelectorAll('.cmp-time').forEach(btn => btn.addEventListener('click', () => {
+    const idx = +btn.dataset.house, pick = houseTimes[idx][btn.dataset.brand], home = homes[idx].point;
+    setSlot('start', { name: home.name, lat: home.lat, lng: home.lng }, false);
+    setSlot('end', { name: pick.name, lat: pick.lat, lng: pick.lng }, false);
+    computeRoute(true);
+    if (window.matchMedia('(max-width: 640px)').matches)
+      document.getElementById('route-panel').classList.add('drawer-open');
+  }));
+  const addBtn = grid.querySelector('.cmp-add-btn');
+  if (addBtn) addBtn.addEventListener('click', () => { compareState.selecting = true; renderCompare(); });
+  grid.querySelectorAll('.cmp-pick').forEach(btn => btn.addEventListener('click', () => {
+    compareState.houses.push(+btn.dataset.idx); compareState.selecting = false; renderCompare();
+  }));
 }
 
 function setSlot(which, point, autoCompute = true) {
@@ -445,6 +543,8 @@ function initMap(data) {
   const overlays = {};
   layerIndex = [];
   allPoints = [];
+  homes = [];
+  brands = [];
   (data.layers || []).forEach(layer => {
     // Stores cluster; homes do NOT. A clustered marker is drawn at its cluster's
     // centroid, which would drag a home's pin away from its real address — so
@@ -455,11 +555,14 @@ function initMap(data) {
     const group = isHomes ? L.layerGroup() : L.featureGroup.subGroup(parent);
     layerIndex.push({ id: layer.id, group });
     const layerMeta = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' };
+    if (!isHomes) brands.push({ id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' });
     (layer.points || []).forEach(point => {
       allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, layer: layerMeta });
       const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point), zIndexOffset: isHomes ? 1000 : 0 });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
+      const homeIdx = isHomes ? homes.length : -1;
+      if (isHomes) homes.push({ idx: homeIdx, point, marker: m });
       if (point.label) {
         // Clicking the label opens the popup, same as clicking the pin. We wire the
         // click explicitly (interactive:true alone doesn't reliably forward it).
@@ -472,8 +575,14 @@ function initMap(data) {
           }
         });
       }
-      m.bindPopup(popupHtml(point));
-      m.on('popupopen', (e) => populateNearest(point, layer, e.popup));
+      m.bindPopup(popupHtml(point, isHomes));
+      m.on('popupopen', (e) => {
+        if (isHomes) {
+          const btn = e.popup.getElement().querySelector('.cmp-btn');
+          if (btn) btn.addEventListener('click', () => { map.closePopup(); openCompare(homeIdx); });
+        }
+        populateNearest(point, layer, e.popup);
+      });
       m.addTo(group);
     });
     group.addTo(map);
@@ -499,8 +608,13 @@ function initMap(data) {
   addDrawerTab(layersCtrl.getContainer(), 'left');
   addDrawerTab(document.getElementById('route-panel'), 'right');
 
-  // Escape closes an open pin popup, same as its X button.
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') map.closePopup(); });
+  // Escape closes the compare panel if open, else an open pin popup (like its X).
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (compareState) closeCompare();
+    else map.closePopup();
+  });
+  document.getElementById('cmp-close').addEventListener('click', closeCompare);
 
   document.getElementById('btn-clear').addEventListener('click', () => {
     setSlot('start', null);
