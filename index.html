@@ -29,8 +29,14 @@
     :root { --brand: #1D9E75; }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    /* Stop mobile Chrome/Safari from auto-inflating text on rotate to landscape
-       (font boosting), which blew up the fonts until you pinch-zoomed back. */
+    /* The mobile layers/directions drawers park off-screen via translateX, which
+       pushes the page wider than the viewport. That extra width makes mobile Chrome
+       zoom-to-fit on rotate to landscape (fonts balloon until you pinch back). Clip
+       the horizontal overflow at the root so the page is never wider than the screen. */
+    html, body { overflow-x: hidden; }
+    /* body must be a positioned containing block, else the absolutely-positioned
+       #route-panel escapes to the viewport and its off-screen park isn't clipped. */
+    body { position: relative; }
     html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     #map { position: absolute; inset: 0; }
 
