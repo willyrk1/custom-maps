@@ -147,17 +147,25 @@
 
     /* House-to-house comparison panel (a bottom bar so its grid has room to
        scroll sideways). Rows = brands, columns = candidate homes. */
+    /* Shrink-to-fit (left+bottom, right/width auto) so the panel is only as wide
+       as its columns — not a full-width bar — and scrolls once it hits max-width. */
     #compare-panel {
-      position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 1100;
+      position: absolute; left: 10px; bottom: 10px; right: auto; z-index: 1100;
+      max-width: calc(100vw - 20px); max-height: 55vh;
       background: #fff; border: 1px solid #e2e2dd; border-radius: 12px;
       box-shadow: 0 4px 18px rgba(0,0,0,.16); font-size: 13px;
-      max-height: 55vh; display: flex; flex-direction: column;
+      display: flex; flex-direction: column;
     }
     .cmp-hd {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; border-bottom: 1px solid #eee; font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 7px 8px 7px 12px; border-bottom: 1px solid #eee; font-weight: 600;
     }
-    #cmp-close { border: none; background: none; font-size: 20px; line-height: 1; cursor: pointer; color: #6b6b66; padding: 0 4px; }
+    #cmp-close {
+      flex: none; border: 1px solid #d3d3cc; background: #fff; color: #444;
+      font-size: 16px; line-height: 1; cursor: pointer; border-radius: 6px;
+      width: 30px; height: 28px; display: flex; align-items: center; justify-content: center;
+    }
+    #cmp-close:hover { background: #f4f5f3; }
     .cmp-grid { overflow: auto; padding: 8px 12px; display: flex; align-items: flex-start; gap: 12px; }
     .cmp-table { border-collapse: collapse; }
     .cmp-table th, .cmp-table td { padding: 3px 7px; text-align: center; }
@@ -264,6 +272,6 @@
     crossorigin=""
   ></script>
   <!-- Bump ?v= whenever app.js changes so browsers don't run a stale cached copy. -->
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

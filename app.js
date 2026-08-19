@@ -614,6 +614,9 @@ function initMap(data) {
     if (compareState) closeCompare();
     else map.closePopup();
   });
+  const cmpPanel = document.getElementById('compare-panel');
+  L.DomEvent.disableClickPropagation(cmpPanel); // don't let panel clicks/scrolls reach the map
+  L.DomEvent.disableScrollPropagation(cmpPanel);
   document.getElementById('cmp-close').addEventListener('click', closeCompare);
 
   document.getElementById('btn-clear').addEventListener('click', () => {
