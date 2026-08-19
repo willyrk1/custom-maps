@@ -156,6 +156,9 @@
       box-shadow: 0 4px 18px rgba(0,0,0,.16); font-size: 13px;
       display: flex; flex-direction: column;
     }
+    /* The ID rule above (display:flex) outranks the UA `[hidden]{display:none}`,
+       so `hidden` alone wouldn't hide the panel — this makes it win again. */
+    #compare-panel[hidden] { display: none; }
     .cmp-hd {
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
       padding: 7px 8px 7px 12px; border-bottom: 1px solid #eee; font-weight: 600;
@@ -272,6 +275,6 @@
     crossorigin=""
   ></script>
   <!-- Bump ?v= whenever app.js changes so browsers don't run a stale cached copy. -->
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>
