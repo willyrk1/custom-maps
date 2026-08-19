@@ -8,7 +8,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const HOMES = [
   { q: '7933 Maynardville Pike, Knoxville, TN', lat: 36.0612528, lng: -83.9243393, label: 'Mill Ridge' },
   { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614, label: 'Poplar Farms' },
-  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks' }
+  { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks' },
+  { q: '205 Roseberry St, Oak Ridge, TN', lat: 35.91154810585934, lng: -84.4252186828093, label: 'The Preserve' }
 ];
 
 const BRANDS = [
@@ -76,7 +77,7 @@ async function geocode(q) {
 }
 
 async function overpass() {
-  const bbox = '35.80,-84.30,36.20,-83.55'; // Knoxville metro (Halls -> Turkey Creek)
+  const bbox = '35.80,-84.50,36.20,-83.55'; // Knoxville metro (Oak Ridge -> Corryton)
   const re = 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Home ?Depot|Lowe|Kohl|Texas Roadhouse|Glory Days|Target|Publix';
   const q = `[out:json][timeout:90];
     ( nwr["name"~"${re}",i](${bbox}); );
