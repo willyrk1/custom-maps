@@ -15,15 +15,23 @@ Static site, deployable to GitHub Pages. Click any two pins → driving distance
   (Census geocoder resolves newer streets that Nominatim can't; homes with
   explicit `lat`/`lng` skip geocoding), pulls brand locations from OpenStreetMap
   via Overpass (with mirror-endpoint fallback), dedupes near-duplicate pins,
-  keeps the 2 nearest of each brand to each home, and recomputes `center`/`zoom`.
-  Edit its `HOMES` (each has `q`, optional `lat`/`lng`, and `label`) and `BRANDS`
-  (key, label, name-match regex, color, glyph) arrays to add homes or brands.
-  Skips elements with a `highway`/`waterway`/`railway` tag so a road whose NAME
-  contains a brand word (e.g. "Lowes Ferry Road", "Kohlston Road") isn't picked
-  up as a fake store. `ADDRESS_OVERRIDES` (keyed by `lat,lng`, matched within
-  0.1mi so small OSM drift can't drop it) supplies real street addresses for
-  stores OSM has no `addr:*` tags for — look one up once, add a line, and it
-  survives every rebuild.
+  keeps the 2 nearest of each brand to each home. Edit its `HOMES` (each has `q`,
+  optional `lat`/`lng`, and `label`) and `BRANDS` (key, label, name-match regex,
+  color, glyph) arrays to add homes or brands. **It now writes the FINAL
+  `data.json` — no hand-edits needed after a rebuild** (all the recurring fixes
+  are baked in):
+  - Skips elements with a `highway`/`waterway`/`railway` tag so a road whose NAME
+    contains a brand word (e.g. "Lowes Ferry Road", "Kohlston Road") isn't picked
+    up as a fake store.
+  - `ADDRESS_OVERRIDES` (a list of `{brand, lat, lng, addr}`, matched by brand +
+    within 0.1mi so small OSM drift can't drop it and a different-brand neighbour
+    can't steal it) supplies real street addresses for stores OSM has no `addr:*`
+    tags for — look one up once, add a line, it survives every rebuild.
+  - `EMERGENCY_ROOMS` — hand-curated hospitals-with-ERs (not name-matchable),
+    emitted as their own `Emergency Room` layer (glyph `ER`, all shown).
+  - `MANUAL_STORES` — stores OSM lacks (e.g. the S Mall Cracker Barrel), appended
+    to their brand layer every build.
+  - `DEFAULT_VIEW` — the startup `center`/`zoom` (was hand-reset after each run).
 - `data.example.json` — template for the map data (layers → points).
 - `data.json` — **plaintext, git-ignored, never committed.** Local only. Points
   carry `name`, `lat`, `lng`, optional `details`, `iconUrl`, and (homes) `label`.
@@ -46,8 +54,7 @@ bypassable and must never replace this.
 ## Editing the data
 
 ```bash
-node build-data.js                  # regenerate data.json from HOMES/BRANDS (or edit by hand)
-# re-set center/zoom afterward if you want a specific default (build-data recomputes it)
+node build-data.js                  # regenerates the FINAL data.json (no hand-edits needed)
 node encrypt-data.js "the-password" # writes data.encrypted
 ```
 Then commit `data.encrypted` (not `data.json`). **Claude does not have the
@@ -121,9 +128,8 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
   `build-data.js`'s `HOMES`. Homes aren't clustered (see below), so the label is
   always beside the pin at the home's real location.
 - **Default startup view**: `data.json`'s `center`/`zoom` (used when the URL has
-  no hash). The user's preferred default is `35.97426,-84.01657` @ z11.5. Note
-  `build-data.js` recomputes these from the homes on rebuild, so re-set them
-  afterward.
+  no hash). The user's preferred default is `35.97426,-84.01657` @ z11.5, baked
+  into `build-data.js`'s `DEFAULT_VIEW` (edit it there, not by hand in data.json).
 - **Fractional zoom**: the map is created with `zoomSnap: 0.5, zoomDelta: 0.5`
   (in `initMap`), so zoom moves in half-steps (11, 11.5, 12 …) — z11 was too far
   out and z12 too close on the user's laptop. `parseHash`/`buildHash` already

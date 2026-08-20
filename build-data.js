@@ -9,8 +9,32 @@ const HOMES = [
   { q: '7933 Maynardville Pike, Knoxville, TN', lat: 36.11011048775813, lng: -83.91113711451447, label: 'Mill Branch Ridge' },
   { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614, label: 'Poplar Farms' },
   { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks' },
-  { q: '205 Roseberry St, Oak Ridge, TN', lat: 35.91154810585934, lng: -84.4252186828093, label: 'The Preserve' }
+  { q: '205 Roseberry St, Oak Ridge, TN', lat: 35.91154810585934, lng: -84.4252186828093, label: 'The Preserve' },
+  { q: '4515 W Emory Rd, Powell, TN', lat: 36.01315337024987, lng: -84.06558638169386, label: 'Belltown' }
 ];
+
+// Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
+// they're a hand-curated list (verified via OSM emergency=yes + web) rather than
+// pulled from Overpass by name. build-data emits them as their own layer.
+const EMERGENCY_ROOMS = [
+  { name: 'Tennova North Knoxville Medical Center', address: '7565 Dannaher Dr, Powell', lat: 36.056198, lng: -83.998259 },
+  { name: 'University of Tennessee Medical Center',  address: '1924 Alcoa Hwy',            lat: 35.9399,   lng: -83.9435 },
+  { name: 'Fort Sanders Regional Medical Center',    address: '1901 Clinch Ave',           lat: 35.9575,   lng: -83.9373 },
+  { name: "East Tennessee Children's Hospital",      address: '2018 W Clinch Ave',         lat: 35.9558,   lng: -83.9386 },
+  { name: 'Parkwest Medical Center',                 address: '9352 Park West Blvd',       lat: 35.9178,   lng: -84.1026 },
+  { name: 'Turkey Creek Medical Center (Tennova)',   address: '10820 Parkside Dr',         lat: 35.8988,   lng: -84.1443 },
+  { name: 'Methodist Medical Center of Oak Ridge',   address: '990 Oak Ridge Turnpike',    lat: 36.0241,   lng: -84.2462 },
+  { name: 'Fort Loudoun Medical Center',             address: '550 Fort Loudoun Medical Center Dr', lat: 35.8251, lng: -84.2699 }
+];
+const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
+
+// Stores OSM doesn't have but the user wants shown — appended to their brand layer
+// on every build (so no more hand-editing data.json after a rebuild).
+const MANUAL_STORES = [
+  { brand: 'crackerbarrel', name: 'Cracker Barrel — 2920 S Mall Road', address: '2920 S Mall Road', lat: 36.029170072893, lng: -83.87301371725 }
+];
+// The startup view build-data would otherwise recompute from the homes each run.
+const DEFAULT_VIEW = { center: [35.97426, -84.01657], zoom: 11.5 };
 
 const BRANDS = [
   { key: 'walmart',       label: 'Walmart',         match: /walmart/i,             color: '#0071CE', glyph: 'Wm' },
@@ -31,29 +55,26 @@ const BRANDS = [
 ];
 
 // Real street addresses for stores OpenStreetMap has no addr:* tags for (looked
-// up by hand). Keyed by "lat,lng" rounded to 4 decimals; applied during build so
-// they survive regeneration. Add a line here after looking one up.
-const ADDRESS_OVERRIDES = {
-  '35.9421,-84.0924': '9137 Middlebrook Pike',      // CVS
-  '36.0849,-83.9253': '4500 E Emory Rd',            // CVS (Halls Crossroads)
-  '36.0283,-83.9275': '4864 N Broadway St',         // CVS (Fountain City)
-  '36.1204,-83.8542': '7425 Tazewell Pike',         // Walgreens (Corryton)
-  '35.9417,-84.0954': '9200 Middlebrook Pike',      // Walgreens
-  '36.0730,-83.9269': '6920 Maynardville Pike',     // Walgreens (Halls)
-  '35.8771,-84.1655': '11530 Kingston Pike',        // Kohl's (Farragut/Turkey Creek)
-  '36.0012,-83.7786': '1510 Cracker Barrel Lane',   // Cracker Barrel (Strawberry Plains)
-  '35.9036,-84.1512': '11001 Turkey Dr',            // Texas Roadhouse (Turkey Creek)
-  '35.9277,-84.0352': '120 Morrell Rd',             // Texas Roadhouse (West Knox)
-  '36.0297,-83.8658': '3071 Kinzel Way'             // Texas Roadhouse (East)
-};
-// Match by distance (not exact key) so a small OSM coordinate drift between runs
-// can't drop an override. Stores are far enough apart that 0.1mi is unambiguous.
-const OVERRIDE_PTS = Object.entries(ADDRESS_OVERRIDES).map(([k, addr]) => {
-  const [lat, lng] = k.split(',').map(Number);
-  return { lat, lng, addr };
-});
-function overrideAddr(lat, lng) {
-  const hit = OVERRIDE_PTS.find(o => haversineMi(o, { lat, lng }) < 0.1);
+// up by hand). Applied during build so they survive regeneration — add a line
+// after looking one up. Matched by BRAND + distance (within 0.1mi) so a small OSM
+// coordinate drift can't drop it AND a neighbour of a different brand can't pick
+// up the wrong address (e.g. the CVS and Kroger both on Middlebrook Pike).
+const ADDRESS_OVERRIDES = [
+  { brand: 'cvs',            lat: 35.9421, lng: -84.0924, addr: '9137 Middlebrook Pike' },
+  { brand: 'cvs',            lat: 36.0849, lng: -83.9253, addr: '4500 E Emory Rd' },          // Halls Crossroads
+  { brand: 'cvs',            lat: 36.0283, lng: -83.9275, addr: '4864 N Broadway St' },       // Fountain City
+  { brand: 'walgreens',      lat: 36.1204, lng: -83.8542, addr: '7425 Tazewell Pike' },       // Corryton
+  { brand: 'walgreens',      lat: 35.9417, lng: -84.0954, addr: '9200 Middlebrook Pike' },
+  { brand: 'walgreens',      lat: 36.0730, lng: -83.9269, addr: '6920 Maynardville Pike' },   // Halls
+  { brand: 'walgreens',      lat: 36.0168, lng: -84.0475, addr: '7320 Clinton Hwy' },         // Powell
+  { brand: 'kohls',          lat: 35.8771, lng: -84.1655, addr: '11530 Kingston Pike' },       // Farragut
+  { brand: 'crackerbarrel',  lat: 36.0012, lng: -83.7786, addr: '1510 Cracker Barrel Lane' }, // Strawberry Plains
+  { brand: 'texasroadhouse', lat: 35.9036, lng: -84.1512, addr: '11001 Turkey Dr' },          // Turkey Creek
+  { brand: 'texasroadhouse', lat: 35.9277, lng: -84.0352, addr: '120 Morrell Rd' },           // West Knox
+  { brand: 'texasroadhouse', lat: 36.0297, lng: -83.8658, addr: '3071 Kinzel Way' }           // East
+];
+function overrideAddr(brandKey, lat, lng) {
+  const hit = ADDRESS_OVERRIDES.find(o => o.brand === brandKey && haversineMi(o, { lat, lng }) < 0.1);
   return hit ? hit.addr : null;
 }
 
@@ -187,7 +208,7 @@ async function overpass() {
       id: b.key, name: b.label, color: b.color, glyph: b.glyph,
       points: list.map(p => {
         const t = p.tags || {};
-        const addr = overrideAddr(p.lat, p.lng) || [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+        const addr = overrideAddr(b.key, p.lat, p.lng) || [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
         const details = {};
         if (addr) details.Address = addr;
         details['Nearest home'] = p.dist.toFixed(1) + ' mi';
@@ -196,12 +217,27 @@ async function overpass() {
     });
   }
 
-  // Center between the homes; zoom out if they're far apart.
-  const cLat = homes.reduce((s, h) => s + h.lat, 0) / homes.length;
-  const cLng = homes.reduce((s, h) => s + h.lng, 0) / homes.length;
-  let spread = 0;
-  for (const a of homes) for (const b of homes) spread = Math.max(spread, haversineMi(a, b));
-  const data = { center: [cLat, cLng], zoom: spread > 10 ? 10 : 11, layers };
+  // Emergency rooms: hand-curated list, all shown (there are only a handful and
+  // they matter), each with its nearest-home straight-line distance.
+  layers.push({
+    id: ER_LAYER.key, name: ER_LAYER.label, color: ER_LAYER.color, glyph: ER_LAYER.glyph,
+    points: EMERGENCY_ROOMS.map(e => ({
+      name: e.name, lat: e.lat, lng: e.lng,
+      details: { Address: e.address, 'Nearest home': Math.min(...homes.map(h => haversineMi(h, e))).toFixed(1) + ' mi' }
+    }))
+  });
+  console.error(`  Emergency Room: ${EMERGENCY_ROOMS.length} shown`);
+
+  // Append manual stores OSM lacks (e.g. the S Mall Cracker Barrel) to their layer.
+  for (const m of MANUAL_STORES) {
+    const layer = layers.find(l => l.id === m.brand);
+    if (!layer) continue;
+    const dist = Math.min(...homes.map(h => haversineMi(h, m)));
+    layer.points.push({ name: m.name, lat: m.lat, lng: m.lng,
+      details: { Address: m.address, 'Nearest home': dist.toFixed(1) + ' mi' } });
+  }
+
+  const data = { center: DEFAULT_VIEW.center, zoom: DEFAULT_VIEW.zoom, layers };
   fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
   console.error('\nWrote data.json with ' + (layers.length-1) + ' brand layers + homes');
   console.error('Next: node encrypt-data.js "<password>"  then commit data.encrypted');
