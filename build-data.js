@@ -9,7 +9,7 @@ const HOMES = [
   { q: '7933 Maynardville Pike, Knoxville, TN', lat: 36.11011048775813, lng: -83.91113711451447, label: 'Mill Branch Ridge', url: 'https://millbranchridge.cookbroshomes.com/' },
   { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614, label: 'Poplar Farms', url: 'https://www.drhorton.com/tennessee/knoxville/knoxville/poplar-farms' },
   { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks', url: 'https://www.drhorton.com/tennessee/knoxville/corryton/irwin-oaks' },
-  { q: '4515 W Emory Rd, Powell, TN', lat: 36.01315337024987, lng: -84.06558638169386, label: 'Belltown' },
+  { q: '4515 W Emory Rd, Powell, TN', lat: 36.01315337024987, lng: -84.06558638169386, label: 'Belltown', url: 'https://belltowntn.com/' },
   { q: '7443 Sparkle Ln, Knoxville, TN', lat: 35.977096280648, lng: -84.066221536362, label: 'Sparkle Ln', url: 'https://www.realtor.com/realestateandhomes-detail/7443-Sparkle-Ln_Knoxville_TN_37931_M86148-75784' }
 ];
 
