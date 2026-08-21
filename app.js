@@ -148,7 +148,11 @@ function popupHtml(point, isHome) {
     }
   }
   const cmp = isHome ? `<div><button class="cmp-btn" type="button">⇄ Compare homes</button></div>` : '';
-  return `<div class="pname">${escapeHtml(point.name)}</div>` + cmp +
+  // Home development / listing website, opened in a new tab (noopener for safety).
+  const link = point.url
+    ? `<div class="pop-link"><a href="${escapeHtml(point.url)}" target="_blank" rel="noopener noreferrer">Website ↗</a></div>`
+    : '';
+  return `<div class="pname">${escapeHtml(point.name)}</div>` + link + cmp +
     (rows ? `<table>${rows}</table>` : '') +
     `<div class="near-list"><div class="near-loading">Finding nearest places…</div></div>`;
 }

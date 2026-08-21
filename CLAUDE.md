@@ -34,7 +34,8 @@ Static site, deployable to GitHub Pages. Click any two pins → driving distance
   - `DEFAULT_VIEW` — the startup `center`/`zoom` (was hand-reset after each run).
 - `data.example.json` — template for the map data (layers → points).
 - `data.json` — **plaintext, git-ignored, never committed.** Local only. Points
-  carry `name`, `lat`, `lng`, optional `details`, `iconUrl`, and (homes) `label`.
+  carry `name`, `lat`, `lng`, optional `details`, `iconUrl`, and (homes) `label`
+  and optional `url` (dev/listing website, rendered in the popup as a new-tab link).
 - `data.encrypted` — the only data file that ships. Ciphertext, safe to publish.
 
 Live at https://willyrk1.github.io/custom-maps/ (public repo — safe because only
