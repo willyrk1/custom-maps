@@ -10,7 +10,8 @@ const HOMES = [
   { q: '8474 Poplar Farms Ln, Knoxville, TN', lat: 35.986032178540675, lng: -84.15754570461614, label: 'Poplar Farms', url: 'https://www.drhorton.com/tennessee/knoxville/knoxville/poplar-farms' },
   { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks', url: 'https://www.drhorton.com/tennessee/knoxville/corryton/irwin-oaks' },
   { q: '4515 W Emory Rd, Powell, TN', lat: 36.01315337024987, lng: -84.06558638169386, label: 'Belltown', url: 'https://belltowntn.com/' },
-  { q: '7443 Sparkle Ln, Knoxville, TN', lat: 35.977096280648, lng: -84.066221536362, label: 'Sparkle Ln', url: 'https://www.realtor.com/realestateandhomes-detail/7443-Sparkle-Ln_Knoxville_TN_37931_M86148-75784' }
+  { q: '7443 Sparkle Ln, Knoxville, TN', lat: 35.977096280648, lng: -84.066221536362, label: 'Sparkle Ln', url: 'https://www.realtor.com/realestateandhomes-detail/7443-Sparkle-Ln_Knoxville_TN_37931_M86148-75784' },
+  { q: 'Hickory View, W Gallaher Ferry Rd, Knoxville, TN', lat: 35.9133396627519, lng: -84.22703527474157, label: 'Hickory View', url: 'https://www.ballhomes.com/Locations/Trend_Collection_at_Hickory_View#/' }
 ];
 
 // Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
@@ -67,6 +68,7 @@ const ADDRESS_OVERRIDES = [
   { brand: 'walgreens',      lat: 35.9417, lng: -84.0954, addr: '9200 Middlebrook Pike' },
   { brand: 'walgreens',      lat: 36.0730, lng: -83.9269, addr: '6920 Maynardville Pike' },   // Halls
   { brand: 'walgreens',      lat: 36.0168, lng: -84.0475, addr: '7320 Clinton Hwy' },         // Powell
+  { brand: 'walgreens',      lat: 35.8938, lng: -84.1742, addr: '601 N Campbell Station Rd' },// Farragut
   { brand: 'kohls',          lat: 35.8771, lng: -84.1655, addr: '11530 Kingston Pike' },       // Farragut
   { brand: 'crackerbarrel',  lat: 36.0012, lng: -83.7786, addr: '1510 Cracker Barrel Lane' }, // Strawberry Plains
   { brand: 'texasroadhouse', lat: 35.9036, lng: -84.1512, addr: '11001 Turkey Dr' },          // Turkey Creek
