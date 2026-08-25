@@ -31,6 +31,8 @@ Static site, deployable to GitHub Pages. Click any two pins → driving distance
     emitted as their own `Emergency Room` layer (glyph `ER`, all shown).
   - `MANUAL_STORES` — stores OSM lacks (e.g. the S Mall Cracker Barrel), appended
     to their brand layer every build.
+  - `STORE_EXCLUDE` — closed/relocated pins OSM still lists (matched by brand +
+    0.1mi), dropped before selection.
   - `DEFAULT_VIEW` — the startup `center`/`zoom` (was hand-reset after each run).
 - `data.example.json` — template for the map data (layers → points).
 - `data.json` — **plaintext, git-ignored, never committed.** Local only. Points

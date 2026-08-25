@@ -12,7 +12,8 @@ const HOMES = [
   { q: '4515 W Emory Rd, Powell, TN', lat: 36.01315337024987, lng: -84.06558638169386, label: 'Belltown', url: 'https://belltowntn.com/' },
   { q: '7443 Sparkle Ln, Knoxville, TN', lat: 35.977096280648, lng: -84.066221536362, label: 'Sparkle Ln', url: 'https://www.realtor.com/realestateandhomes-detail/7443-Sparkle-Ln_Knoxville_TN_37931_M86148-75784' },
   { q: 'Hickory View, W Gallaher Ferry Rd, Knoxville, TN', lat: 35.9133396627519, lng: -84.22703527474157, label: 'Hickory View', url: 'https://www.ballhomes.com/Locations/Trend_Collection_at_Hickory_View#/' },
-  { q: '7441 Peony Dr, Knoxville, TN', lat: 36.11150108466293, lng: -83.8773207718707, label: '7441 Peony', url: 'https://www.realtor.com/realestateandhomes-detail/7441-Peony-Dr_Knoxville_TN_37918_M70801-09368' }
+  { q: '7441 Peony Dr, Knoxville, TN', lat: 36.11150108466293, lng: -83.8773207718707, label: '7441 Peony', url: 'https://www.realtor.com/realestateandhomes-detail/7441-Peony-Dr_Knoxville_TN_37918_M70801-09368' },
+  { q: '3719 Locustwood Way NW, Knoxville, TN', lat: 35.983655007878845, lng: -83.98399391728275, label: '3719 Locustwood', url: 'https://www.realtor.com/realestateandhomes-detail/3719-Locustwood-Way_Knoxville_TN_37921_M75464-37948' }
 ];
 
 // Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
@@ -69,6 +70,7 @@ const ADDRESS_OVERRIDES = [
   { brand: 'walgreens',      lat: 35.9417, lng: -84.0954, addr: '9200 Middlebrook Pike' },
   { brand: 'walgreens',      lat: 36.0730, lng: -83.9269, addr: '6920 Maynardville Pike' },   // Halls
   { brand: 'walgreens',      lat: 36.0168, lng: -84.0475, addr: '7320 Clinton Hwy' },         // Powell
+  { brand: 'walgreens',      lat: 35.9730, lng: -83.9865, addr: '4423 Western Ave' },         // Western Ave (37921)
   { brand: 'walgreens',      lat: 35.8938, lng: -84.1742, addr: '601 N Campbell Station Rd' },// Farragut
   { brand: 'kohls',          lat: 35.8771, lng: -84.1655, addr: '11530 Kingston Pike' },       // Farragut
   { brand: 'crackerbarrel',  lat: 36.0012, lng: -83.7786, addr: '1510 Cracker Barrel Lane' }, // Strawberry Plains
@@ -76,6 +78,14 @@ const ADDRESS_OVERRIDES = [
   { brand: 'texasroadhouse', lat: 35.9277, lng: -84.0352, addr: '120 Morrell Rd' },           // West Knox
   { brand: 'texasroadhouse', lat: 36.0297, lng: -83.8658, addr: '3071 Kinzel Way' }           // East
 ];
+// OSM pins to drop — closed/relocated stores OSM still lists. Matched by brand +
+// within 0.1mi, filtered out before selection.
+const STORE_EXCLUDE = [
+  { brand: 'cvs', lat: 35.9727, lng: -83.9830 }  // 4406 Western Ave — closed & replaced
+];
+function isExcluded(brandKey, lat, lng) {
+  return STORE_EXCLUDE.some(e => e.brand === brandKey && haversineMi(e, { lat, lng }) < 0.1);
+}
 function overrideAddr(brandKey, lat, lng) {
   const hit = ADDRESS_OVERRIDES.find(o => o.brand === brandKey && haversineMi(o, { lat, lng }) < 0.1);
   return hit ? hit.addr : null;
@@ -181,6 +191,7 @@ async function overpass() {
     const lat = e.lat ?? (e.center && e.center.lat);
     const lng = e.lon ?? (e.center && e.center.lon);
     if (lat == null) continue;
+    if (isExcluded(brand.key, lat, lng)) continue; // closed/relocated pin OSM still lists
     const dedup = brand.key + ':' + lat.toFixed(3) + ',' + lng.toFixed(3);
     if (seen.has(dedup)) continue; seen.add(dedup);
     const dist = Math.min(...homes.map(h => haversineMi(h, { lat, lng })));
