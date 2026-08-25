@@ -11,7 +11,8 @@ const HOMES = [
   { q: '6948 McGuffey Run Ln, Corryton, TN', lat: 36.12216285628701, lng: -83.849234713683, label: 'Irwin Oaks', url: 'https://www.drhorton.com/tennessee/knoxville/corryton/irwin-oaks' },
   { q: '4515 W Emory Rd, Powell, TN', lat: 36.01315337024987, lng: -84.06558638169386, label: 'Belltown', url: 'https://belltowntn.com/' },
   { q: '7443 Sparkle Ln, Knoxville, TN', lat: 35.977096280648, lng: -84.066221536362, label: 'Sparkle Ln', url: 'https://www.realtor.com/realestateandhomes-detail/7443-Sparkle-Ln_Knoxville_TN_37931_M86148-75784' },
-  { q: 'Hickory View, W Gallaher Ferry Rd, Knoxville, TN', lat: 35.9133396627519, lng: -84.22703527474157, label: 'Hickory View', url: 'https://www.ballhomes.com/Locations/Trend_Collection_at_Hickory_View#/' }
+  { q: 'Hickory View, W Gallaher Ferry Rd, Knoxville, TN', lat: 35.9133396627519, lng: -84.22703527474157, label: 'Hickory View', url: 'https://www.ballhomes.com/Locations/Trend_Collection_at_Hickory_View#/' },
+  { q: '7441 Peony Dr, Knoxville, TN', lat: 36.11150108466293, lng: -83.8773207718707, label: '7441 Peony', url: 'https://www.realtor.com/realestateandhomes-detail/7441-Peony-Dr_Knoxville_TN_37918_M70801-09368' }
 ];
 
 // Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
