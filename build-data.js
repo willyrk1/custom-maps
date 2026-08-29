@@ -14,7 +14,10 @@ const HOMES = [
   { q: 'Hickory View, W Gallaher Ferry Rd, Knoxville, TN', lat: 35.9133396627519, lng: -84.22703527474157, label: 'Hickory View', url: 'https://www.ballhomes.com/Locations/Trend_Collection_at_Hickory_View#/' },
   { q: '7441 Peony Dr, Knoxville, TN', lat: 36.11150108466293, lng: -83.8773207718707, label: '7441 Peony', url: 'https://www.realtor.com/realestateandhomes-detail/7441-Peony-Dr_Knoxville_TN_37918_M70801-09368' },
   { q: '10315 Ivy Hollow Dr, Knoxville, TN 37931', lat: 35.964210545538, lng: -84.147343188838, label: '10315 Ivy Hollow', url: 'https://www.realtor.com/realestateandhomes-detail/10315-Ivy-Hollow-Dr_Knoxville_TN_37931_M82709-05021' },
-  { q: '670 Whitesburg Dr, Knoxville, TN 37918', lat: 36.032276381095, lng: -83.978672646594, label: '670 Whitesburg', url: 'https://www.realtor.com/realestateandhomes-detail/670-Whitesburg-Dr_Knoxville_TN_37918_M74569-79816' }
+  { q: '670 Whitesburg Dr, Knoxville, TN 37918', lat: 36.032276381095, lng: -83.978672646594, label: '670 Whitesburg', url: 'https://www.realtor.com/realestateandhomes-detail/670-Whitesburg-Dr_Knoxville_TN_37918_M74569-79816' },
+  { q: '4330 Edenfield Dr, Knoxville, TN 37938', lat: 36.094992709164, lng: -83.934275887183, label: '4330 Edenfield', url: 'https://www.realtor.com/realestateandhomes-detail/4330-Edenfield-Dr_Knoxville_TN_37938_M76747-58223' },
+  { q: '1084 Hillside Ln, Lenoir City, TN 37771', lat: 35.791312444794, lng: -84.286388944228, label: '1084 Hillside', url: 'https://www.realtor.com/realestateandhomes-detail/1084-Hillside-Ln_Lenoir-City_TN_37771_M78193-71327' },
+  { q: '6861 Cardindale Dr, Knoxville, TN 37918', lat: 36.0375804644798, lng: -83.97459313021949, label: '6861 Cardindale', url: 'https://www.realtor.com/realestateandhomes-detail/6861-Cardindale-Dr_Knoxville_TN_37918_M83023-32715' }
 ];
 
 // Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
