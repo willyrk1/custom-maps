@@ -7,7 +7,14 @@ const { buildRegion } = require('./build-lib');
 const UA = { 'User-Agent': 'atl-house-map/1.0 (wknight94@gmail.com)' };
 
 const HOMES = [
-  { q: '512 Clinton Dr, Temple, GA 30179', lat: 33.719576890564, lng: -85.002430541926, label: '512 Clinton Dr' }
+  { q: '512 Clinton Dr, Temple, GA 30179', lat: 33.719576890564, lng: -85.002430541926, label: '512 Clinton Dr' },
+  { q: '254 Webster Lake Dr, Temple, GA 30179', lat: 33.746210548897, lng: -85.047962008862, label: '254 Webster Lake' },
+  { q: '507 Rippling Ct, Temple, GA 30179', lat: 33.737457568996, lng: -85.015087718326, label: '507 Rippling Ct' },
+  { q: '338 Springwater Way, Bremen, GA 30110', lat: 33.710239616452, lng: -85.114553532835, label: '338 Springwater Way' },
+  { q: '141 Lindsey Dr, Bremen, GA 30110', lat: 33.741940544742, lng: -85.150202093993, label: '141 Lindsey Dr' },
+  { q: '398 Woodrow Kay Rd, Rockmart, GA 30153', lat: 33.902882111136, lng: -85.023031174046, label: '398 Woodrow Kay' },
+  { q: '592 Kyles Cir, Hiram, GA 30141', lat: 33.848212264482, lng: -84.791915801513, label: '592 Kyles Cir' },
+  { q: '170 Shenandoah Dr, Hiram, GA 30141', lat: 33.837169711971, lng: -84.775087086433, label: '170 Shenandoah Dr' }
 ];
 
 // Hospitals with a 24/7 ER around Villa Rica / west metro (coords via US Census geocoder).
@@ -19,7 +26,7 @@ const EMERGENCY_ROOMS = [
 ];
 const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
 
-const DEFAULT_VIEW = { center: [33.72, -84.92], zoom: 11 };
+const DEFAULT_VIEW = { center: [33.80, -84.96], zoom: 10.5 };
 
 const BRANDS = [
   // Groceries popular in the west/south metro
@@ -48,7 +55,7 @@ fs.mkdirSync('atlanta', { recursive: true });
 
 buildRegion({
   UA, state: 'GA', stateFull: 'Georgia', outfile: 'atlanta/data.json',
-  bbox: '33.45,-85.20,33.98,-84.55', // Villa Rica / Carrollton / Douglasville / Dallas–Hiram
+  bbox: '33.45,-85.40,34.00,-84.55', // Cedartown–Rockmart / Bremen / Carrollton / Douglasville / Dallas–Hiram
   overpassNames: 'Publix|Kroger|Walmart|Ingles|Aldi|Food ?Lion|Chick-?fil-?A|Cracker Barrel|Olive Garden|Texas Roadhouse|LongHorn|Zaxby|Target|CVS|Walgreens|Home ?Depot|Lowe',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });
