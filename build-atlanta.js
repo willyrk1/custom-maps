@@ -14,7 +14,10 @@ const HOMES = [
   { q: '141 Lindsey Dr, Bremen, GA 30110', lat: 33.741940544742, lng: -85.150202093993, label: '141 Lindsey Dr' },
   { q: '398 Woodrow Kay Rd, Rockmart, GA 30153', lat: 33.902882111136, lng: -85.023031174046, label: '398 Woodrow Kay' },
   { q: '592 Kyles Cir, Hiram, GA 30141', lat: 33.848212264482, lng: -84.791915801513, label: '592 Kyles Cir' },
-  { q: '170 Shenandoah Dr, Hiram, GA 30141', lat: 33.837169711971, lng: -84.775087086433, label: '170 Shenandoah Dr' }
+  { q: '170 Shenandoah Dr, Hiram, GA 30141', lat: 33.837169711971, lng: -84.775087086433, label: '170 Shenandoah Dr' },
+  { q: '6096 Willowpond Ct, Douglasville, GA 30135', lat: 33.638994537536, lng: -84.845970777044, label: '6096 Willowpond' },
+  { q: '179 Cainbridge Park Dr, Newnan, GA 30263', lat: 33.495935930241, lng: -84.784137684503, label: '179 Cainbridge Park' },
+  { q: '70 Wilkes Ct, Newnan, GA 30263', lat: 33.452923018566, lng: -84.829437589681, label: '70 Wilkes Ct' }
 ];
 
 // Hospitals with a 24/7 ER around Villa Rica / west metro (coords via US Census geocoder).
@@ -26,7 +29,7 @@ const EMERGENCY_ROOMS = [
 ];
 const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
 
-const DEFAULT_VIEW = { center: [33.80, -84.96], zoom: 10.5 };
+const DEFAULT_VIEW = { center: [33.68, -84.96], zoom: 10 };
 
 const BRANDS = [
   // Groceries popular in the west/south metro
@@ -51,11 +54,19 @@ const BRANDS = [
   { key: 'lowes',         label: "Lowe's",          match: /lowe'?s/i,            color: '#004990', glyph: 'Lw' }
 ];
 
+// Real street addresses (and an optional friendlier `label`) for stores OSM has
+// no addr:* tags for. Matched by brand + within 0.1mi. `label` becomes the pin's
+// display suffix ("Olive Garden — Arbor Place Mall, Douglasville"); `addr` fills
+// the popup Address row.
+const ADDRESS_OVERRIDES = [
+  { brand: 'olivegarden', lat: 33.7289173, lng: -84.7499828, addr: '6710 Douglas Blvd, Douglasville, GA 30135', label: 'Arbor Place Mall, Douglasville' }
+];
+
 fs.mkdirSync('atlanta', { recursive: true });
 
 buildRegion({
   UA, state: 'GA', stateFull: 'Georgia', outfile: 'atlanta/data.json',
-  bbox: '33.45,-85.40,34.00,-84.55', // Cedartown–Rockmart / Bremen / Carrollton / Douglasville / Dallas–Hiram
+  bbox: '33.30,-85.40,34.00,-84.55', // Newnan (S) / Cedartown–Rockmart (NW) / Carrollton / Douglasville / Dallas–Hiram
   overpassNames: 'Publix|Kroger|Walmart|Ingles|Aldi|Food ?Lion|Chick-?fil-?A|Cracker Barrel|Olive Garden|Texas Roadhouse|LongHorn|Zaxby|Target|CVS|Walgreens|Home ?Depot|Lowe',
-  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, DEFAULT_VIEW
+  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });

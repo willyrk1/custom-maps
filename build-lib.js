@@ -83,10 +83,8 @@ async function buildRegion(cfg) {
 
   const isExcluded = (brandKey, lat, lng) =>
     STORE_EXCLUDE.some(e => e.brand === brandKey && haversineMi(e, { lat, lng }) < 0.1);
-  const overrideAddr = (brandKey, lat, lng) => {
-    const hit = ADDRESS_OVERRIDES.find(o => o.brand === brandKey && haversineMi(o, { lat, lng }) < 0.1);
-    return hit ? hit.addr : null;
-  };
+  const findOverride = (brandKey, lat, lng) =>
+    ADDRESS_OVERRIDES.find(o => o.brand === brandKey && haversineMi(o, { lat, lng }) < 0.1) || null;
 
   const homes = [];
   for (const h of cfg.HOMES) {
@@ -146,11 +144,15 @@ async function buildRegion(cfg) {
       id: b.key, name: b.label, color: b.color, glyph: b.glyph,
       points: list.map(p => {
         const t = p.tags || {};
-        const addr = overrideAddr(b.key, p.lat, p.lng) || [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+        const ov = findOverride(b.key, p.lat, p.lng);
+        const addr = (ov && ov.addr) || [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+        // The pin's display suffix — an override's optional `label` (e.g. a mall
+        // name) beats the raw street address; otherwise fall back to the address.
+        const suffix = (ov && ov.label) || addr;
         const details = {};
         if (addr) details.Address = addr;
         details['Nearest home'] = p.dist.toFixed(1) + ' mi';
-        return { name: b.label + (addr ? ' — ' + addr : ''), lat: p.lat, lng: p.lng, details };
+        return { name: b.label + (suffix ? ' — ' + suffix : ''), lat: p.lat, lng: p.lng, details };
       })
     });
   }
