@@ -62,11 +62,19 @@ const ADDRESS_OVERRIDES = [
   { brand: 'olivegarden', lat: 33.7289173, lng: -84.7499828, addr: '6710 Douglas Blvd, Douglasville, GA 30135', label: 'Arbor Place Mall, Douglasville' }
 ];
 
+// Stores OSM doesn't have yet — appended to their brand layer every build.
+const MANUAL_STORES = [
+  // Newly built (2025); OSM still shows a vacant lot. Coords + address confirmed
+  // via Google Maps + olivegarden.com (Austell/Heritage Hills #6513). Sits next
+  // to the LongHorn that OSM does have.
+  { brand: 'olivegarden', name: 'Olive Garden — Heritage Hills, Austell', address: '1350 East West Connector, Austell, GA 30106', lat: 33.8558165, lng: -84.5964714 }
+];
+
 fs.mkdirSync('atlanta', { recursive: true });
 
 buildRegion({
   UA, state: 'GA', stateFull: 'Georgia', outfile: 'atlanta/data.json',
-  bbox: '33.30,-85.40,34.00,-84.55', // Newnan (S) / Cedartown–Rockmart (NW) / Carrollton / Douglasville / Dallas–Hiram
+  bbox: '33.30,-85.40,34.10,-84.55', // Newnan (S) / Cedartown–Rockmart (N, stores sit ~34.01-34.05) / Carrollton / Douglasville / Dallas–Hiram
   overpassNames: 'Publix|Kroger|Walmart|Ingles|Aldi|Food ?Lion|Chick-?fil-?A|Cracker Barrel|Olive Garden|Texas Roadhouse|LongHorn|Zaxby|Target|CVS|Walgreens|Home ?Depot|Lowe',
-  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, DEFAULT_VIEW
+  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, MANUAL_STORES, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });
