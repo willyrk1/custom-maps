@@ -1,9 +1,13 @@
-/* Knoxville house-hunt map.
+/* House-hunt map (shared by every region — see index.html per folder).
    1. Password gate decrypts data.encrypted in the browser (AES-256-GCM / PBKDF2).
    2. Renders layered, toggleable markers on a Leaflet map.
-   3. Click any two pins to route between them (distance + time) via OSRM. */
+   3. Click any two pins to route between them (distance + time) via OSRM.
+   Region differences (per-device password memory key, etc.) come from the page's
+   optional `window.MAP_CONFIG`; data.encrypted/data.json are loaded by RELATIVE
+   path, so each region folder gets its own automatically. */
 
-const STORAGE_KEY = 'knox-map-key';
+const MAP_CONFIG = window.MAP_CONFIG || {};
+const STORAGE_KEY = MAP_CONFIG.storageKey || 'knox-map-key';
 const DATA_URL = 'data.encrypted';
 const PLAINTEXT_URL = 'data.json';
 

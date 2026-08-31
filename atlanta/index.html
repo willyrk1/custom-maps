@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>Knoxville house hunt</title>
+  <title>Atlanta house hunt</title>
 
   <link
     rel="stylesheet"
@@ -25,7 +25,7 @@
     crossorigin=""
   />
 
-  <link rel="stylesheet" href="map.css" />
+  <link rel="stylesheet" href="../map.css" />
 </head>
 <body>
   <div id="map"></div>
@@ -50,7 +50,7 @@
 
   <div id="gate">
     <div class="card">
-      <h1>Knoxville house hunt</h1>
+      <h1>Atlanta house hunt</h1>
       <p>This map is private. Enter the shared password to view it.</p>
       <form id="gate-form">
         <label for="pw">Password</label>
@@ -77,10 +77,10 @@
     integrity="sha256-lTN8BYPNcvhjd8DFDOWPtNbYWcQEz94SPEYHCaEDl7k="
     crossorigin=""
   ></script>
-  <!-- Region config (per-device password-memory key). Data files load by relative
-       path, so this root page reads ./data.encrypted; atlanta/ reads atlanta/…. -->
-  <script>window.MAP_CONFIG = { storageKey: 'knox-map-key' };</script>
-  <!-- Bump ?v= whenever app.js changes so browsers don't run a stale cached copy. -->
-  <script src="app.js?v=15"></script>
+  <!-- Separate password-memory key so this map and Knoxville don't collide in
+       localStorage. app.js + map.css are shared one level up; data.encrypted is
+       loaded by relative path, so it resolves to atlanta/data.encrypted. -->
+  <script>window.MAP_CONFIG = { storageKey: 'atl-map-key' };</script>
+  <script src="../app.js?v=15"></script>
 </body>
 </html>

@@ -1,25 +1,44 @@
 # CLAUDE.md
 
-Private, password-protected Leaflet map for house-hunting around Knoxville.
-Static site, deployable to GitHub Pages. Click any two pins → driving distance + time.
+Private, password-protected Leaflet maps for house-hunting. Static site,
+deployable to GitHub Pages. Click any two pins → driving distance + time.
+
+**Two regions share one codebase** (`app.js` + `map.css` + the build engine):
+- **Knoxville** — repo root, live at https://willyrk1.github.io/custom-maps/
+- **Atlanta (west/south metro, seeded at Villa Rica)** — the `atlanta/` subfolder,
+  live at https://willyrk1.github.io/custom-maps/atlanta/
+
+Each region is just an `index.html` + a `data.encrypted`; everything else is
+shared. To add another region, copy the pattern below (a build config + a folder).
 
 ## How it fits together
 
-- `index.html` — password gate overlay + map container + routing panel. Loads
-  Leaflet from unpkg (with SRI hashes) and `app.js`.
-- `app.js` — decrypts `data.encrypted` in the browser (AES-256-GCM / PBKDF2 via
-  Web Crypto), renders layered markers, and does click-to-route through OSRM's
-  public server.
-- `encrypt-data.js` — Node tool that encrypts `data.json` → `data.encrypted`.
-- `build-data.js` — Node tool that regenerates `data.json`: geocodes the homes
-  (Census geocoder resolves newer streets that Nominatim can't; homes with
-  explicit `lat`/`lng` skip geocoding), pulls brand locations from OpenStreetMap
-  via Overpass (with mirror-endpoint fallback), dedupes near-duplicate pins,
-  keeps the 2 nearest of each brand to each home. Edit its `HOMES` (each has `q`,
-  optional `lat`/`lng`, and `label`) and `BRANDS` (key, label, name-match regex,
-  color, glyph) arrays to add homes or brands. **It now writes the FINAL
-  `data.json` — no hand-edits needed after a rebuild** (all the recurring fixes
-  are baked in):
+- `map.css` — all the shared styles, linked by every region's `index.html`
+  (root links `map.css`, `atlanta/` links `../map.css`). Edit styling here once.
+- `app.js` — shared by every region. Decrypts `data.encrypted` in the browser
+  (AES-256-GCM / PBKDF2 via Web Crypto), renders layered markers, click-to-route
+  through OSRM, the Compare panel, deep-linking. Region-specific bits come from
+  `window.MAP_CONFIG` set inline in each page (currently just `storageKey`, the
+  per-device password-memory key — `knox-map-key` vs `atl-map-key` so the two
+  maps don't collide in localStorage). `data.encrypted`/`data.json` load by
+  **relative** path, so each folder automatically reads its own.
+- `index.html` (root = Knoxville) / `atlanta/index.html` — the per-region page
+  shell: password gate + map container + routing/compare panels, its own
+  `<title>`/gate heading, its `MAP_CONFIG`, and `<script src="app.js?v=N">`
+  (root) or `../app.js?v=N` (subfolders). Otherwise identical — keep them in sync.
+- `build-lib.js` — the **shared build engine** (`buildRegion(cfg)`): geocodes
+  homes (explicit `lat`/`lng` skips it), pulls brand locations from OpenStreetMap
+  via Overpass (mirror fallback), dedupes, keeps the 2 nearest of each brand to
+  each home, applies overrides/exclusions/manual stores, and writes that region's
+  final `data.json`. Region-agnostic — no hand-edits after a run.
+- `build-data.js` (Knoxville) / `build-atlanta.js` (Atlanta) — thin **region
+  configs** that hand `buildRegion` their `HOMES`, `BRANDS`, `bbox`,
+  `overpassNames`, `ADDRESS_OVERRIDES`, `STORE_EXCLUDE`, `MANUAL_STORES`,
+  `EMERGENCY_ROOMS`, `DEFAULT_VIEW`, and `outfile` (`data.json` vs
+  `atlanta/data.json`). `build-atlanta.js` `mkdir`s `atlanta/` first. Edit
+  `HOMES` (each `{q, lat?, lng?, label, url?}`) / `BRANDS` (key, label,
+  name-match regex, color, glyph) to add homes or brands. **Writes the FINAL
+  `data.json` — no hand-edits needed after a rebuild** (all recurring fixes baked in):
   - Skips elements with a `highway`/`waterway`/`railway` tag so a road whose NAME
     contains a brand word (e.g. "Lowes Ferry Road", "Kohlston Road") isn't picked
     up as a fake store.
@@ -50,19 +69,26 @@ a JS password check**. The password decrypts the data in the browser; the repo
 holds only ciphertext. A plain `if (password === ...)` gate would be trivially
 bypassable and must never replace this.
 
-- The password is never stored in the repo.
-- `localStorage` key `knox-map-key` remembers the password per-device
-  ("Remember on this device"); a stale/wrong saved key is cleared and re-prompts.
+- The password is never stored in the repo. Each region can use the same password
+  or its own — they're independent ciphertext files.
+- `localStorage` key (`knox-map-key` / `atl-map-key`, set via `MAP_CONFIG.storageKey`)
+  remembers the password per-device per-region ("Remember on this device"); a
+  stale/wrong saved key is cleared and re-prompts.
 
 ## Editing the data
 
 ```bash
-node build-data.js                  # regenerates the FINAL data.json (no hand-edits needed)
-node encrypt-data.js "the-password" # writes data.encrypted
+# Knoxville (root):
+node build-data.js                                                   # -> data.json
+node encrypt-data.js "the-password"                                  # -> data.encrypted
+# Atlanta (subfolder) — encrypt-data.js takes explicit in/out paths:
+node build-atlanta.js                                                # -> atlanta/data.json
+node encrypt-data.js "the-password" atlanta/data.json atlanta/data.encrypted
 ```
-Then commit `data.encrypted` (not `data.json`). **Claude does not have the
-password** — when the data changes, ask the user to run `encrypt-data.js`
-themselves, then commit/push the resulting `data.encrypted`.
+Then commit the `data.encrypted` (never the `data.json` — both are git-ignored at
+every depth). **Claude does not have the password** — when the data changes, ask
+the user to run `encrypt-data.js` themselves, then commit/push the resulting
+`data.encrypted`.
 
 ## Running locally
 
@@ -75,16 +101,19 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
 
 ## Gotchas
 
-- **Cache-busting `app.js`**: `index.html` loads it as `app.js?v=N`. **Bump `N`
-  whenever you change `app.js`**, otherwise browsers (and the preview pane) keep
-  running the previously-cached copy — you'll see new `data.encrypted` but stale
-  code, which looks like clustering/labels "not working" until a hard refresh.
-  GitHub Pages serves with `max-age=600`, so without the bump a stale copy can
-  linger ~10 min after a deploy.
+- **Cache-busting `app.js`**: each `index.html` loads it as `app.js?v=N` (root)
+  or `../app.js?v=N` (subfolders). **Bump `N` in *every* region's `index.html`
+  whenever you change `app.js`** (they share one file), otherwise browsers (and
+  the preview pane) keep running the previously-cached copy — you'll see new
+  `data.encrypted` but stale code, which looks like clustering/labels "not
+  working" until a hard refresh. GitHub Pages serves with `max-age=600`, so
+  without the bump a stale copy can linger ~10 min after a deploy. (`map.css`
+  is not cache-busted; if a CSS change must land immediately, add `?v=` to its
+  `<link>` too.)
 - **SRI hashes**: if you bump the Leaflet version (or the `markercluster` /
-  `featuregroup.subgroup` plugin versions) in `index.html`, recompute the
-  `integrity="sha256-..."` values or the browser blocks the script. Compute with
-  `openssl dgst -sha256 -binary FILE | openssl base64 -A`.
+  `featuregroup.subgroup` plugin versions), recompute the `integrity="sha256-..."`
+  values in *every* region's `index.html` or the browser blocks the script.
+  Compute with `openssl dgst -sha256 -binary FILE | openssl base64 -A`.
 - **Deep-linking**: the URL hash is `#zoom/lat/lng` plus optional params, order-
   independent: `&h=id1,id2` for hidden layers (absent = all shown) and
   `&r=slat,slng,elat,elng,startName,endName` for a plotted route (names are

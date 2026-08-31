@@ -1,0 +1,213 @@
+/* Shared styles for the house-hunt maps (Knoxville root + atlanta/ subfolder). */
+:root { --brand: #1D9E75; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+/* The mobile layers/directions drawers park off-screen via translateX, which
+   pushes the page wider than the viewport. That extra width makes mobile Chrome
+   zoom-to-fit on rotate to landscape (fonts balloon until you pinch back). Clip
+   the horizontal overflow at the root so the page is never wider than the screen. */
+html, body { overflow-x: hidden; }
+/* body must be a positioned containing block, else the absolutely-positioned
+   #route-panel escapes to the viewport and its off-screen park isn't clipped. */
+body { position: relative; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+#map { position: absolute; inset: 0; }
+
+/* Password gate */
+#gate {
+  position: fixed; inset: 0; z-index: 2000;
+  background: #f4f5f3; display: flex; align-items: center; justify-content: center;
+}
+#gate .card {
+  background: #fff; border: 1px solid #e2e2dd; border-radius: 14px;
+  padding: 28px 26px; width: 320px; max-width: 90vw; box-shadow: 0 10px 40px rgba(0,0,0,.08);
+}
+#gate h1 { font-size: 18px; margin: 0 0 4px; }
+#gate p { font-size: 13px; color: #6b6b66; margin: 0 0 18px; line-height: 1.5; }
+#gate label { font-size: 13px; color: #444; display: block; margin-bottom: 6px; }
+#gate input[type=password] {
+  width: 100%; height: 40px; padding: 0 12px; font-size: 15px;
+  border: 1px solid #d3d3cc; border-radius: 8px; outline: none;
+}
+#gate input[type=password]:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(29,158,117,.15); }
+#gate .row { display: flex; align-items: center; gap: 8px; margin: 14px 0 4px; font-size: 13px; color: #444; }
+#gate button {
+  width: 100%; height: 40px; margin-top: 16px; border: none; border-radius: 8px;
+  background: var(--brand); color: #fff; font-size: 15px; font-weight: 500; cursor: pointer;
+}
+#gate button:disabled { opacity: .6; cursor: default; }
+#gate .err { color: #b3261e; font-size: 13px; margin-top: 12px; min-height: 16px; }
+
+/* Routing panel */
+#route-panel {
+  position: absolute; top: 10px; right: 10px; z-index: 1000;
+  background: #fff; border: 1px solid #e2e2dd; border-radius: 12px;
+  padding: 12px 14px; width: 230px; box-shadow: 0 4px 18px rgba(0,0,0,.12); font-size: 13px;
+}
+#route-panel h2 { font-size: 14px; margin: 0 0 10px; font-weight: 600; }
+.slot { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.slot .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.slot .txt { flex: 1; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot .txt.empty { color: #9a9a95; }
+#route-result { margin-top: 8px; padding-top: 10px; border-top: 1px solid #eee; }
+#route-result .big { font-size: 20px; font-weight: 600; }
+#route-result .sub { color: #6b6b66; }
+#route-panel .actions { display: flex; gap: 8px; margin-top: 10px; }
+#route-panel .actions button {
+  flex: 1; height: 30px; border: 1px solid #d3d3cc; background: #fff; border-radius: 7px;
+  font-size: 12px; cursor: pointer;
+}
+/* Permanent nickname label next to a home pin */
+.home-label.leaflet-tooltip {
+  background: #1D9E75; color: #fff; border: none; border-radius: 6px;
+  padding: 2px 7px; font-size: 12px; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  cursor: pointer;
+}
+.home-label.leaflet-tooltip-right::before { border-right-color: #1D9E75; }
+.home-label.leaflet-tooltip-left::before { border-left-color: #1D9E75; }
+
+/* Nearest-places list inside a pin popup */
+.near-list { margin-top: 8px; border-top: 1px solid #eee; padding-top: 6px; max-height: 230px; overflow-y: auto; min-width: 210px; }
+.near-hd { font-size: 10px; color: #6b6b66; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 4px; }
+.near-loading, .near-empty { font-size: 12px; color: #6b6b66; padding: 4px 0; }
+.near-row {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  background: #fff; border: none; border-radius: 6px; padding: 5px 6px;
+  font-size: 13px; cursor: pointer; text-align: left; color: #222;
+}
+.near-row:hover { background: #f4f5f3; }
+.near-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.near-time { color: #1D9E75; font-weight: 700; white-space: nowrap; }
+/* Glyph chip shown next to each brand name in the layers selector */
+.legend-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 16px; border-radius: 5px; vertical-align: middle;
+  color: #fff; font-size: 10px; font-weight: 700; margin-right: 3px;
+}
+/* keep the checkbox on the same centered line as the chip + label */
+.leaflet-control-layers-overlays label input { vertical-align: middle; }
+
+/* All / None row in the layers control */
+.layers-allnone {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 6px 6px; margin-bottom: 4px;
+  border-bottom: 1px solid #e2e2dd; font-size: 12px;
+}
+.layers-allnone button {
+  border: 1px solid #d3d3cc; background: #fff; border-radius: 6px;
+  padding: 2px 10px; font-size: 12px; cursor: pointer; color: #333;
+}
+.layers-allnone button:hover { background: #f4f5f3; }
+.layers-allnone span { color: #bbb; }
+
+/* Clustered pins shown as a box of brand chips (breaks apart on zoom) */
+.cluster-wrap { background: none; border: none; }
+.cluster-box {
+  background: #fff; border: 1px solid #cfcfc8; border-radius: 9px;
+  padding: 3px; display: flex; flex-wrap: wrap; gap: 3px;
+  max-width: 92px; box-shadow: 0 2px 6px rgba(0,0,0,.22);
+}
+.cluster-chip {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #fff;
+  color: #fff; font-size: 9px; font-weight: 700; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.cluster-more { font-size: 10px; color: #555; align-self: center; padding: 0 3px; }
+
+.leaflet-popup-content { margin: 10px 12px; font-size: 13px; }
+.leaflet-popup-content .pname { font-weight: 600; margin-bottom: 4px; }
+.leaflet-popup-content .pop-link { margin: 2px 0 4px; }
+.leaflet-popup-content .pop-link a { color: #1D9E75; font-weight: 600; text-decoration: none; font-size: 13px; }
+.leaflet-popup-content .pop-link a:hover { text-decoration: underline; }
+.leaflet-popup-content table { border-collapse: collapse; }
+.leaflet-popup-content td { padding: 1px 0; vertical-align: top; }
+.leaflet-popup-content td.k { color: #6b6b66; padding-right: 10px; white-space: nowrap; }
+
+/* "Compare homes" button in a candidate-home popup header */
+.cmp-btn {
+  margin: 6px 0 2px; border: 1px solid #1D9E75; background: #1D9E75; color: #fff;
+  border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.cmp-btn:hover { background: #178a63; }
+
+/* House-to-house comparison panel (a bottom bar so its grid has room to
+   scroll sideways). Rows = brands, columns = candidate homes. */
+/* Shrink-to-fit (left+bottom, right/width auto) so the panel is only as wide
+   as its columns — not a full-width bar — and scrolls once it hits max-width. */
+#compare-panel {
+  position: absolute; left: 10px; bottom: 10px; right: auto; z-index: 1100;
+  max-width: calc(100vw - 20px); max-height: 55vh;
+  background: #fff; border: 1px solid #e2e2dd; border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.16); font-size: 13px;
+  display: flex; flex-direction: column;
+}
+/* The ID rule above (display:flex) outranks the UA `[hidden]{display:none}`,
+   so `hidden` alone wouldn't hide the panel — this makes it win again. */
+#compare-panel[hidden] { display: none; }
+.cmp-hd {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 7px 8px 7px 12px; border-bottom: 1px solid #eee; font-weight: 600;
+}
+#cmp-close {
+  flex: none; border: 1px solid #d3d3cc; background: #fff; color: #444;
+  font-size: 16px; line-height: 1; cursor: pointer; border-radius: 6px;
+  width: 30px; height: 28px; display: flex; align-items: center; justify-content: center;
+}
+#cmp-close:hover { background: #f4f5f3; }
+.cmp-grid { overflow: auto; padding: 8px 12px; display: flex; align-items: flex-start; gap: 12px; }
+.cmp-table { border-collapse: collapse; }
+.cmp-table th, .cmp-table td { padding: 3px 7px; text-align: center; }
+.cmp-rail { position: sticky; left: 0; background: #fff; z-index: 1; }
+.cmp-head { font-weight: 600; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid #eee; }
+.cmp-head[data-house] { cursor: pointer; user-select: none; }
+.cmp-head[data-house]:hover { background: #f4f5f3; }
+.cmp-head.cmp-sorted { color: #1D9E75; }
+.cmp-arrow { font-size: 10px; }
+.cmp-cell { min-width: 66px; }
+.cmp-time { color: #1D9E75; font-weight: 700; background: #f4f5f3; border: 1px solid #e2e2dd; border-radius: 6px; padding: 4px 8px; cursor: pointer; white-space: nowrap; }
+.cmp-time:hover { background: #e9ebe7; }
+.cmp-loading { color: #9a9a95; }
+.cmp-add { display: flex; flex-direction: column; gap: 6px; min-width: 118px; padding-top: 24px; }
+.cmp-add-btn, .cmp-pick { border: 1px solid #d3d3cc; background: #fff; border-radius: 7px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; text-align: left; }
+.cmp-add-btn { color: #1D9E75; font-weight: 600; }
+.cmp-pick:hover, .cmp-add-btn:hover { background: #f4f5f3; }
+.cmp-picker-hd { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #6b6b66; }
+.cmp-none { font-size: 12px; color: #9a9a95; }
+
+/* Drawer handle tabs (only shown on phones). The tab is a child of each
+   panel so it slides with it; it stays poking into view when the panel is
+   parked off-screen. */
+.drawer-tab { display: none; }
+@media (max-width: 640px) {
+  .drawer-tab {
+    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 6px; width: 30px; height: 38px;
+    background: #fff; border: 1px solid #cfcfc8; color: #1D9E75;
+    font-size: 22px; line-height: 1; cursor: pointer; padding: 0;
+    box-shadow: 0 1px 5px rgba(0,0,0,.22); z-index: 1;
+  }
+  .drawer-tab-left  { right: -31px; border-radius: 0 9px 9px 0; border-left: none; }
+  .drawer-tab-right { left: -31px;  border-radius: 9px 0 0 9px; border-right: none; }
+
+  /* Layers selector → left drawer (park body off-left, keep the tab showing) */
+  .leaflet-control-layers {
+    position: relative;
+    transform: translateX(calc(-100% - 10px));
+    transition: transform .28s ease;
+    max-width: 62vw;
+  }
+  .leaflet-control-layers.drawer-open { transform: translateX(0); }
+  .leaflet-control-layers-list { max-height: 66vh; overflow-y: auto; }
+  .leaflet-control-layers .drawer-tab::after { content: '\203A'; }         /* › in */
+  .leaflet-control-layers.drawer-open .drawer-tab::after { content: '\2039'; } /* ‹ out */
+
+  /* Directions panel → right drawer (park body off-right, keep the tab showing) */
+  #route-panel {
+    right: 0; width: 210px;
+    transform: translateX(100%);
+    transition: transform .28s ease;
+  }
+  #route-panel.drawer-open { transform: translateX(0); }
+  #route-panel .drawer-tab::after { content: '\2039'; }                    /* ‹ in */
+  #route-panel.drawer-open .drawer-tab::after { content: '\203A'; }        /* › out */
+}
