@@ -7,7 +7,7 @@ const { buildRegion } = require('./build-lib');
 const UA = { 'User-Agent': 'atl-house-map/1.0 (wknight94@gmail.com)' };
 
 const HOMES = [
-  { q: '7202 Tara Dr, Villa Rica, GA 30180', lat: 33.657356831721, lng: -84.931643866606, label: '7202 Tara Dr' }
+  { q: '512 Clinton Dr, Temple, GA 30179', lat: 33.719576890564, lng: -85.002430541926, label: '512 Clinton Dr' }
 ];
 
 // Hospitals with a 24/7 ER around Villa Rica / west metro (coords via US Census geocoder).
@@ -19,7 +19,7 @@ const EMERGENCY_ROOMS = [
 ];
 const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
 
-const DEFAULT_VIEW = { center: [33.70, -84.88], zoom: 11 };
+const DEFAULT_VIEW = { center: [33.72, -84.92], zoom: 11 };
 
 const BRANDS = [
   // Groceries popular in the west/south metro
