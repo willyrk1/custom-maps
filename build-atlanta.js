@@ -20,7 +20,10 @@ const HOMES = [
   { q: '70 Wilkes Ct, Newnan, GA 30263', lat: 33.452923018566, lng: -84.829437589681, label: '70 Wilkes Ct' },
   { q: '3 Willow Trce SW, Cartersville, GA 30120', lat: 34.172547254101, lng: -84.858839203642, label: '3 Willow Trce' },
   { q: 'Langston Reserve by Ashton Woods, GA', lat: 34.13745573525989, lng: -84.82971472792491, label: 'Langston Reserve' },
-  { q: '24 Woodhaven Ct SW, Cartersville, GA 30120', lat: 34.157251982182, lng: -84.899514719383, label: '24 Woodhaven Ct' }
+  { q: '24 Woodhaven Ct SW, Cartersville, GA 30120', lat: 34.157251982182, lng: -84.899514719383, label: '24 Woodhaven Ct' },
+  { q: '326 Tuggle Ct, Woodstock, GA 30188', lat: 34.114498269841, lng: -84.518723520469, label: '326 Tuggle Ct' },
+  { q: '105 Peregrine Way NW, Kennesaw, GA 30144', lat: 34.07314301632, lng: -84.551996181954, label: '105 Peregrine Way' },
+  { q: '4341 Laurian Dr NW, Kennesaw, GA 30144', lat: 34.054893778495, lng: -84.563271759739, label: '4341 Laurian Dr' }
 ];
 
 // Hospitals with a 24/7 ER around Villa Rica / west metro (coords via US Census geocoder).
@@ -33,7 +36,15 @@ const EMERGENCY_ROOMS = [
 ];
 const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
 
-const DEFAULT_VIEW = { center: [33.81, -84.88], zoom: 9.5 };
+// Extra curated destination layers (non-brand). The airport is here so every
+// home shows its drive time/distance to ATL.
+const EXTRA_LAYERS = [
+  { key: 'airport', label: 'Airport', color: '#5B2C83', glyph: 'ATL', points: [
+    { name: 'Hartsfield-Jackson Atlanta Intl (ATL)', address: '6000 N Terminal Pkwy, Atlanta, GA 30320', lat: 33.642321379947, lng: -84.442539931849 }
+  ]}
+];
+
+const DEFAULT_VIEW = { center: [33.80, -84.80], zoom: 9.5 };
 
 const BRANDS = [
   // Groceries popular in the west/south metro
@@ -71,14 +82,16 @@ const MANUAL_STORES = [
   // Newly built (2025); OSM still shows a vacant lot. Coords + address confirmed
   // via Google Maps + olivegarden.com (Austell/Heritage Hills #6513). Sits next
   // to the LongHorn that OSM does have.
-  { brand: 'olivegarden', name: 'Olive Garden — Heritage Hills, Austell', address: '1350 East West Connector, Austell, GA 30106', lat: 33.8558165, lng: -84.5964714 }
+  { brand: 'olivegarden', name: 'Olive Garden — Heritage Hills, Austell', address: '1350 East West Connector, Austell, GA 30106', lat: 33.8558165, lng: -84.5964714 },
+  // OSM lacks it; address geocodes cleanly + web-confirmed open (Yelp/Tripadvisor).
+  { brand: 'olivegarden', name: 'Olive Garden — 420 E Church St, Cartersville', address: '420 E Church St, Cartersville, GA 30121', lat: 34.169343707618, lng: -84.787163889838 }
 ];
 
 fs.mkdirSync('atlanta', { recursive: true });
 
 buildRegion({
   UA, state: 'GA', stateFull: 'Georgia', outfile: 'atlanta/data.json',
-  bbox: '33.30,-85.40,34.32,-84.55', // Newnan (S) / Cartersville (N, ~34.16-34.24) / Cedartown–Rockmart / Carrollton / Douglasville / Dallas–Hiram–Acworth
+  bbox: '33.30,-85.40,34.32,-84.47', // Newnan (S) / Cartersville (N) / Cedartown–Rockmart (W) / Carrollton / Douglasville / Dallas–Hiram–Acworth / Kennesaw–Woodstock (E). East edge kept off dense Sandy Springs/Roswell so the Overpass query doesn't time out.
   overpassNames: 'Publix|Kroger|Walmart|Ingles|Aldi|Food ?Lion|Chick-?fil-?A|Cracker Barrel|Olive Garden|Texas Roadhouse|LongHorn|Zaxby|Target|CVS|Walgreens|Home ?Depot|Lowe',
-  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, MANUAL_STORES, DEFAULT_VIEW
+  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });

@@ -42,14 +42,22 @@ shared. To add another region, copy the pattern below (a build config + a folder
   - Skips elements with a `highway`/`waterway`/`railway` tag so a road whose NAME
     contains a brand word (e.g. "Lowes Ferry Road", "Kohlston Road") isn't picked
     up as a fake store.
-  - `ADDRESS_OVERRIDES` (a list of `{brand, lat, lng, addr}`, matched by brand +
-    within 0.1mi so small OSM drift can't drop it and a different-brand neighbour
-    can't steal it) supplies real street addresses for stores OSM has no `addr:*`
-    tags for — look one up once, add a line, it survives every rebuild.
+  - `ADDRESS_OVERRIDES` (a list of `{brand, lat, lng, addr, label?}`, matched by
+    brand + within 0.1mi so small OSM drift can't drop it and a different-brand
+    neighbour can't steal it) supplies real street addresses for stores OSM has no
+    `addr:*` tags for — look one up once, add a line, it survives every rebuild.
+    Optional `label` sets a friendlier pin suffix (e.g. a mall name — "Olive
+    Garden — Arbor Place Mall, Douglasville") while `addr` still fills the popup.
   - `EMERGENCY_ROOMS` — hand-curated hospitals-with-ERs (not name-matchable),
     emitted as their own `Emergency Room` layer (glyph `ER`, all shown).
-  - `MANUAL_STORES` — stores OSM lacks (e.g. the S Mall Cracker Barrel), appended
-    to their brand layer every build.
+  - `EXTRA_LAYERS` — other hand-curated non-brand destination layers
+    (`{key,label,color,glyph,points:[{name,address?,lat,lng}]}`), all points
+    shown, each annotated with its nearest-home distance. Atlanta uses this for
+    the `Airport` layer (ATL) so every home shows drive time to Hartsfield-Jackson.
+    Rendered by the same generic `app.js` code as any layer (legend chip, cluster
+    glyph, nearest-places row, Compare row) — no app.js change to add one.
+  - `MANUAL_STORES` — stores OSM lacks (e.g. the S Mall Cracker Barrel, the Austell
+    & Cartersville Olive Gardens), appended to their brand layer every build.
   - `STORE_EXCLUDE` — closed/relocated pins OSM still lists (matched by brand +
     0.1mi), dropped before selection.
   - `DEFAULT_VIEW` — the startup `center`/`zoom` (was hand-reset after each run).
@@ -101,6 +109,19 @@ Note: `serve` may pick its own port and ignore `-l` — check its log for the UR
 
 ## Gotchas
 
+- **Overpass "0 raw elements" on a big/dense `bbox`**: a server-side timeout
+  comes back as HTTP 200 with an empty element list, not an error. `build-lib.js`
+  now treats 0 elements as a soft failure — it retries the other mirrors and, if
+  all return 0, **throws instead of writing a storeless `data.json`** (query
+  timeout is `[timeout:180]`). If a build dies with "Overpass returned no
+  elements", the `bbox` is too large/dense (extending Atlanta's east edge into
+  Sandy Springs/Roswell once triggered this) — shrink it (cover only what the
+  homes need) or retry. A silent storeless map looks like "all the store layers
+  vanished", leaving only homes/ER/airport in the layers control.
+- **Preview shows stale data after a rebuild**: changing only the URL hash does
+  NOT re-fetch `data.json` (the app keeps the in-memory layers). After a rebuild,
+  do a full reload (`window.location.reload()` or re-navigate) or you'll debug
+  against the previous build's data.
 - **Cache-busting `app.js`**: each `index.html` loads it as `app.js?v=N` (root)
   or `../app.js?v=N` (subfolders). **Bump `N` in *every* region's `index.html`
   whenever you change `app.js`** (they share one file), otherwise browsers (and

@@ -53,7 +53,7 @@ async function geocode(q, cfg) {
 }
 
 async function overpass(cfg) {
-  const q = `[out:json][timeout:90];
+  const q = `[out:json][timeout:180];
     ( nwr["name"~"${cfg.overpassNames}",i](${cfg.bbox}); );
     out center tags;`;
   // The main server is often busy/rate-limited; fall through to mirrors.
@@ -69,17 +69,23 @@ async function overpass(cfg) {
         const r = await fetch(ep, { method: 'POST', headers: { ...cfg.UA, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(q) });
         const text = await r.text();
         if (!r.ok || text.trim().startsWith('<')) { console.error(`  overpass ${ep} try ${attempt}: HTTP ${r.status} (busy), retrying`); await sleep(4000); continue; }
-        return (JSON.parse(text).elements) || [];
+        const els = (JSON.parse(text).elements) || [];
+        // A server-side timeout on a big bbox comes back as HTTP 200 with an
+        // empty element list. Our queries always expect matches, so treat 0 as a
+        // soft failure and try another endpoint rather than writing a storeless
+        // map — see the "returned 0 raw elements" gotcha in CLAUDE.md.
+        if (els.length === 0) { console.error(`  overpass ${ep} try ${attempt}: 0 elements (likely a server timeout on a large bbox), retrying`); await sleep(4000); continue; }
+        return els;
       } catch (e) { console.error(`  overpass ${ep} try ${attempt}: ${e.message}`); await sleep(3000); }
     }
   }
-  throw new Error('All Overpass endpoints unavailable — try again shortly');
+  throw new Error('Overpass returned no elements from any endpoint — the bbox may be too large/dense (server timeout). Shrink cfg.bbox or retry shortly; NOT writing a storeless data.json.');
 }
 
 async function buildRegion(cfg) {
   const { BRANDS, EMERGENCY_ROOMS = [], ER_LAYER, MANUAL_STORES = [],
-          ADDRESS_OVERRIDES = [], STORE_EXCLUDE = [], DEFAULT_VIEW,
-          outfile = 'data.json', state = '' } = cfg;
+          ADDRESS_OVERRIDES = [], STORE_EXCLUDE = [], EXTRA_LAYERS = [],
+          DEFAULT_VIEW, outfile = 'data.json', state = '' } = cfg;
 
   const isExcluded = (brandKey, lat, lng) =>
     STORE_EXCLUDE.some(e => e.brand === brandKey && haversineMi(e, { lat, lng }) < 0.1);
@@ -168,6 +174,21 @@ async function buildRegion(cfg) {
       }))
     });
     console.error(`  ${ER_LAYER.label}: ${EMERGENCY_ROOMS.length} shown`);
+  }
+
+  // Extra hand-curated destination layers (e.g. an airport) — non-brand points
+  // emitted as their own layer, all shown, each with its nearest-home distance.
+  for (const L of EXTRA_LAYERS) {
+    layers.push({
+      id: L.key, name: L.label, color: L.color, glyph: L.glyph,
+      points: L.points.map(pt => {
+        const details = {};
+        if (pt.address) details.Address = pt.address;
+        details['Nearest home'] = Math.min(...homes.map(h => haversineMi(h, pt))).toFixed(1) + ' mi';
+        return { name: pt.name, lat: pt.lat, lng: pt.lng, details };
+      })
+    });
+    console.error(`  ${L.label}: ${L.points.length} shown`);
   }
 
   // Append manual stores OSM lacks to their brand layer.
