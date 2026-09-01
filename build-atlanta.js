@@ -17,7 +17,10 @@ const HOMES = [
   { q: '170 Shenandoah Dr, Hiram, GA 30141', lat: 33.837169711971, lng: -84.775087086433, label: '170 Shenandoah Dr' },
   { q: '6096 Willowpond Ct, Douglasville, GA 30135', lat: 33.638994537536, lng: -84.845970777044, label: '6096 Willowpond' },
   { q: '179 Cainbridge Park Dr, Newnan, GA 30263', lat: 33.495935930241, lng: -84.784137684503, label: '179 Cainbridge Park' },
-  { q: '70 Wilkes Ct, Newnan, GA 30263', lat: 33.452923018566, lng: -84.829437589681, label: '70 Wilkes Ct' }
+  { q: '70 Wilkes Ct, Newnan, GA 30263', lat: 33.452923018566, lng: -84.829437589681, label: '70 Wilkes Ct' },
+  { q: '3 Willow Trce SW, Cartersville, GA 30120', lat: 34.172547254101, lng: -84.858839203642, label: '3 Willow Trce' },
+  { q: 'Langston Reserve by Ashton Woods, GA', lat: 34.13745573525989, lng: -84.82971472792491, label: 'Langston Reserve' },
+  { q: '24 Woodhaven Ct SW, Cartersville, GA 30120', lat: 34.157251982182, lng: -84.899514719383, label: '24 Woodhaven Ct' }
 ];
 
 // Hospitals with a 24/7 ER around Villa Rica / west metro (coords via US Census geocoder).
@@ -25,11 +28,12 @@ const EMERGENCY_ROOMS = [
   { name: 'Tanner Medical Center — Villa Rica',   address: '601 Dallas Hwy, Villa Rica',          lat: 33.74582145356,  lng: -84.917382158299 },
   { name: 'Tanner Medical Center — Carrollton',   address: '705 Dixie St, Carrollton',            lat: 33.570479639253, lng: -85.072524750163 },
   { name: 'Wellstar Douglas Hospital',            address: '8954 Hospital Dr, Douglasville',      lat: 33.739471533667, lng: -84.732942720523 },
-  { name: 'Wellstar Paulding Medical Center',     address: '2518 Jimmy Lee Smith Pkwy, Hiram',    lat: 33.902373236585, lng: -84.78510534499  }
+  { name: 'Wellstar Paulding Medical Center',     address: '2518 Jimmy Lee Smith Pkwy, Hiram',    lat: 33.902373236585, lng: -84.78510534499  },
+  { name: 'Piedmont Cartersville Medical Center',  address: '960 Joe Frank Harris Pkwy SE, Cartersville', lat: 34.199741146039, lng: -84.795208315739 }
 ];
 const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
 
-const DEFAULT_VIEW = { center: [33.68, -84.96], zoom: 10 };
+const DEFAULT_VIEW = { center: [33.81, -84.88], zoom: 9.5 };
 
 const BRANDS = [
   // Groceries popular in the west/south metro
@@ -74,7 +78,7 @@ fs.mkdirSync('atlanta', { recursive: true });
 
 buildRegion({
   UA, state: 'GA', stateFull: 'Georgia', outfile: 'atlanta/data.json',
-  bbox: '33.30,-85.40,34.10,-84.55', // Newnan (S) / Cedartown–Rockmart (N, stores sit ~34.01-34.05) / Carrollton / Douglasville / Dallas–Hiram
+  bbox: '33.30,-85.40,34.32,-84.55', // Newnan (S) / Cartersville (N, ~34.16-34.24) / Cedartown–Rockmart / Carrollton / Douglasville / Dallas–Hiram–Acworth
   overpassNames: 'Publix|Kroger|Walmart|Ingles|Aldi|Food ?Lion|Chick-?fil-?A|Cracker Barrel|Olive Garden|Texas Roadhouse|LongHorn|Zaxby|Target|CVS|Walgreens|Home ?Depot|Lowe',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, MANUAL_STORES, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });
