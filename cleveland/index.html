@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Cleveland house hunt</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+    integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc="
+    crossorigin=""
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+    integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA="
+    crossorigin=""
+  />
+
+  <link rel="stylesheet" href="../map.css" />
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="route-panel" hidden>
+    <h2>Directions</h2>
+    <div class="slot"><span class="dot" style="background:#1D9E75"></span><span class="txt empty" id="slot-start">Click a pin → Start here</span></div>
+    <div class="slot"><span class="dot" style="background:#b3261e"></span><span class="txt empty" id="slot-end">Click a pin → End here</span></div>
+    <div id="route-result" hidden>
+      <div class="big" id="route-time">—</div>
+      <div class="sub" id="route-dist"></div>
+    </div>
+    <div class="actions">
+      <button id="btn-clear">Clear</button>
+    </div>
+  </div>
+
+  <div id="compare-panel" hidden>
+    <div class="cmp-hd"><span id="cmp-title">Compare homes</span><button id="cmp-close" type="button" aria-label="Close comparison">×</button></div>
+    <div class="cmp-grid"></div>
+  </div>
+
+  <div id="gate">
+    <div class="card">
+      <h1>Cleveland house hunt</h1>
+      <p>This map is private. Enter the shared password to view it.</p>
+      <form id="gate-form">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" autofocus />
+        <div class="row"><input id="remember" type="checkbox" checked /> <label for="remember" style="margin:0">Remember on this device</label></div>
+        <button id="unlock" type="submit">Unlock</button>
+        <div class="err" id="gate-err"></div>
+      </form>
+    </div>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script
+    src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+    integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg="
+    crossorigin=""
+  ></script>
+  <script
+    src="https://unpkg.com/leaflet.featuregroup.subgroup@1.0.2/dist/leaflet.featuregroup.subgroup.js"
+    integrity="sha256-lTN8BYPNcvhjd8DFDOWPtNbYWcQEz94SPEYHCaEDl7k="
+    crossorigin=""
+  ></script>
+  <!-- Separate password-memory key so this map doesn't collide with the others in
+       localStorage. app.js + map.css are shared one level up; data.encrypted is
+       loaded by relative path, so it resolves to cleveland/data.encrypted. -->
+  <script>window.MAP_CONFIG = { storageKey: 'cle-map-key' };</script>
+  <script src="../app.js?v=15"></script>
+</body>
+</html>

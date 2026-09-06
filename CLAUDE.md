@@ -3,13 +3,17 @@
 Private, password-protected Leaflet maps for house-hunting. Static site,
 deployable to GitHub Pages. Click any two pins → driving distance + time.
 
-**Two regions share one codebase** (`app.js` + `map.css` + the build engine):
+**Three regions share one codebase** (`app.js` + `map.css` + the build engine):
 - **Knoxville** — repo root, live at https://willyrk1.github.io/custom-maps/
-- **Atlanta (west/south metro, seeded at Villa Rica)** — the `atlanta/` subfolder,
+- **Atlanta (west/south metro)** — the `atlanta/` subfolder,
   live at https://willyrk1.github.io/custom-maps/atlanta/
+- **Cleveland, TN** — the `cleveland/` subfolder,
+  live at https://willyrk1.github.io/custom-maps/cleveland/
 
 Each region is just an `index.html` + a `data.encrypted`; everything else is
-shared. To add another region, copy the pattern below (a build config + a folder).
+shared. To add another region: copy an existing `build-<region>.js` + its folder's
+`index.html` (set the `<title>`, gate heading, and `MAP_CONFIG.storageKey`), then
+build + encrypt. Storage keys so far: `knox-map-key`, `atl-map-key`, `cle-map-key`.
 
 ## How it fits together
 
@@ -31,8 +35,8 @@ shared. To add another region, copy the pattern below (a build config + a folder
   via Overpass (mirror fallback), dedupes, keeps the 2 nearest of each brand to
   each home, applies overrides/exclusions/manual stores, and writes that region's
   final `data.json`. Region-agnostic — no hand-edits after a run.
-- `build-data.js` (Knoxville) / `build-atlanta.js` (Atlanta) — thin **region
-  configs** that hand `buildRegion` their `HOMES`, `BRANDS`, `bbox`,
+- `build-data.js` (Knoxville) / `build-atlanta.js` / `build-cleveland.js` — thin
+  **region configs** that hand `buildRegion` their `HOMES`, `BRANDS`, `bbox`,
   `overpassNames`, `ADDRESS_OVERRIDES`, `STORE_EXCLUDE`, `MANUAL_STORES`,
   `EMERGENCY_ROOMS`, `DEFAULT_VIEW`, and `outfile` (`data.json` vs
   `atlanta/data.json`). `build-atlanta.js` `mkdir`s `atlanta/` first. Edit
@@ -57,7 +61,10 @@ shared. To add another region, copy the pattern below (a build config + a folder
     Rendered by the same generic `app.js` code as any layer (legend chip, cluster
     glyph, nearest-places row, Compare row) — no app.js change to add one.
   - `MANUAL_STORES` — stores OSM lacks (e.g. the S Mall Cracker Barrel, the Austell
-    & Cartersville Olive Gardens), appended to their brand layer every build.
+    & Cartersville Olive Gardens, the Cleveland Cracker Barrel), appended to their
+    brand layer every build. If that brand had **zero** OSM matches (so no layer
+    exists yet), the engine now creates the layer from its `BRANDS` def — otherwise
+    the manual pin was silently dropped.
   - `STORE_EXCLUDE` — closed/relocated pins OSM still lists (matched by brand +
     0.1mi), dropped before selection.
   - `DEFAULT_VIEW` — the startup `center`/`zoom` (was hand-reset after each run).
@@ -89,9 +96,11 @@ bypassable and must never replace this.
 # Knoxville (root):
 node build-data.js                                                   # -> data.json
 node encrypt-data.js "the-password"                                  # -> data.encrypted
-# Atlanta (subfolder) — encrypt-data.js takes explicit in/out paths:
+# Atlanta / Cleveland (subfolders) — encrypt-data.js takes explicit in/out paths:
 node build-atlanta.js                                                # -> atlanta/data.json
 node encrypt-data.js "the-password" atlanta/data.json atlanta/data.encrypted
+node build-cleveland.js                                              # -> cleveland/data.json
+node encrypt-data.js "the-password" cleveland/data.json cleveland/data.encrypted
 ```
 Then commit the `data.encrypted` (never the `data.json` — both are git-ignored at
 every depth). **Claude does not have the password** — when the data changes, ask

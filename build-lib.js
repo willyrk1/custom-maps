@@ -163,6 +163,24 @@ async function buildRegion(cfg) {
     });
   }
 
+  // Append manual stores OSM lacks. If the brand had no OSM matches (so no layer
+  // exists yet), create the layer from its BRANDS definition — otherwise the
+  // manual pin would be silently dropped. Done before ER/EXTRA_LAYERS so a
+  // created brand layer sits among the brands in the layers control.
+  for (const m of MANUAL_STORES) {
+    let layer = layers.find(l => l.id === m.brand);
+    if (!layer) {
+      const bdef = BRANDS.find(b => b.key === m.brand);
+      if (!bdef) { console.error(`  !! MANUAL_STORES: unknown brand "${m.brand}", skipped`); continue; }
+      layer = { id: bdef.key, name: bdef.label, color: bdef.color, glyph: bdef.glyph, points: [] };
+      layers.push(layer);
+      console.error(`  ${bdef.label}: 0 from OSM -> created for manual store`);
+    }
+    const dist = Math.min(...homes.map(h => haversineMi(h, m)));
+    layer.points.push({ name: m.name, lat: m.lat, lng: m.lng,
+      details: { Address: m.address, 'Nearest home': dist.toFixed(1) + ' mi' } });
+  }
+
   // Emergency rooms: hand-curated list, all shown (there are only a handful and
   // they matter), each with its nearest-home straight-line distance.
   if (ER_LAYER && EMERGENCY_ROOMS.length) {
@@ -189,15 +207,6 @@ async function buildRegion(cfg) {
       })
     });
     console.error(`  ${L.label}: ${L.points.length} shown`);
-  }
-
-  // Append manual stores OSM lacks to their brand layer.
-  for (const m of MANUAL_STORES) {
-    const layer = layers.find(l => l.id === m.brand);
-    if (!layer) continue;
-    const dist = Math.min(...homes.map(h => haversineMi(h, m)));
-    layer.points.push({ name: m.name, lat: m.lat, lng: m.lng,
-      details: { Address: m.address, 'Nearest home': dist.toFixed(1) + ' mi' } });
   }
 
   const data = { center: DEFAULT_VIEW.center, zoom: DEFAULT_VIEW.zoom, layers };
