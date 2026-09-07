@@ -13,7 +13,8 @@ const HOMES = [
   { q: 'Stonebridge North by Highland Homes, Wesley Chapel, FL', lat: 28.259108316649748, lng: -82.23109203011126, label: 'Stonebridge North by Highland Homes' },
   { q: 'Bellamy Crossings by Lennar, Wesley Chapel, FL', lat: 28.329380705371086, lng: -82.35797559847985, label: 'Bellamy Crossings by Lennar' },
   { q: 'Hilltop Vistas by Meritage, Wesley Chapel, FL', lat: 28.3395811844316, lng: -82.23717241830711, label: 'Hilltop Vistas by Meritage' },
-  { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers' }
+  { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers' },
+  { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
@@ -37,7 +38,12 @@ const MANUAL_STORES = [
   { brand: 'cvs',       name: 'CVS — 30050 County Line Rd',        address: '30050 County Line Rd, Wesley Chapel, FL 33543', lat: 28.176022398191, lng: -82.346572477487 }, // County Line & Mansfield
   { brand: 'walgreens', name: 'Walgreens — 20741 Bruce B Downs Blvd', address: '20741 Bruce B Downs Blvd, Tampa, FL 33647',   lat: 28.170574016444, lng: -82.353626276005 },
   // OSM lacks the Zephyrhills Sonny's; address web-confirmed (Yelp/official site).
-  { brand: 'sonnys',    name: "Sonny's BBQ — 6606 Gall Blvd, Zephyrhills", address: '6606 Gall Blvd, Zephyrhills, FL 33542', lat: 28.2522446, lng: -82.1883002 }
+  { brand: 'sonnys',    name: "Sonny's BBQ — 6606 Gall Blvd, Zephyrhills", address: '6606 Gall Blvd, Zephyrhills, FL 33542', lat: 28.2522446, lng: -82.1883002 },
+  // Zephyrhills CVS/Walgreens OSM doesn't surface (geocoded via Census).
+  { brand: 'cvs',       name: 'CVS — 36440 State Rd 54',        address: '36440 State Rd 54, Zephyrhills, FL 33541', lat: 28.229865467749, lng: -82.214499294274 },
+  { brand: 'cvs',       name: 'CVS — 37943 Eiland Blvd',        address: '37943 Eiland Blvd, Zephyrhills, FL 33542', lat: 28.25187104341, lng: -82.189023450468 },
+  { brand: 'walgreens', name: 'Walgreens — 6429 Gall Blvd',     address: '6429 Gall Blvd, Zephyrhills, FL 33542',    lat: 28.251045775685, lng: -82.18831495285 },
+  { brand: 'walgreens', name: 'Walgreens — 36515 State Rd 54',  address: '36515 State Rd 54, Zephyrhills, FL 33541', lat: 28.229992049304, lng: -82.213133552736 }
 ];
 
 const DEFAULT_VIEW = { center: [28.26, -82.30], zoom: 11 };
