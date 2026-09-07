@@ -35,7 +35,9 @@ const STORE_EXCLUDE = [
 // Stores OSM lacks or doesn't surface, forced on with a confirmed address.
 const MANUAL_STORES = [
   { brand: 'cvs',       name: 'CVS — 30050 County Line Rd',        address: '30050 County Line Rd, Wesley Chapel, FL 33543', lat: 28.176022398191, lng: -82.346572477487 }, // County Line & Mansfield
-  { brand: 'walgreens', name: 'Walgreens — 20741 Bruce B Downs Blvd', address: '20741 Bruce B Downs Blvd, Tampa, FL 33647',   lat: 28.170574016444, lng: -82.353626276005 }
+  { brand: 'walgreens', name: 'Walgreens — 20741 Bruce B Downs Blvd', address: '20741 Bruce B Downs Blvd, Tampa, FL 33647',   lat: 28.170574016444, lng: -82.353626276005 },
+  // OSM lacks the Zephyrhills Sonny's; address web-confirmed (Yelp/official site).
+  { brand: 'sonnys',    name: "Sonny's BBQ — 6606 Gall Blvd, Zephyrhills", address: '6606 Gall Blvd, Zephyrhills, FL 33542', lat: 28.2522446, lng: -82.1883002 }
 ];
 
 const DEFAULT_VIEW = { center: [28.26, -82.30], zoom: 11 };
