@@ -3,17 +3,20 @@
 Private, password-protected Leaflet maps for house-hunting. Static site,
 deployable to GitHub Pages. Click any two pins → driving distance + time.
 
-**Three regions share one codebase** (`app.js` + `map.css` + the build engine):
+**Four regions share one codebase** (`app.js` + `map.css` + the build engine):
 - **Knoxville** — repo root, live at https://willyrk1.github.io/custom-maps/
 - **Atlanta (west/south metro)** — the `atlanta/` subfolder,
   live at https://willyrk1.github.io/custom-maps/atlanta/
 - **Cleveland, TN** — the `cleveland/` subfolder,
   live at https://willyrk1.github.io/custom-maps/cleveland/
+- **Wesley Chapel, FL (north Tampa)** — the `wesleychapel/` subfolder,
+  live at https://willyrk1.github.io/custom-maps/wesleychapel/
 
 Each region is just an `index.html` + a `data.encrypted`; everything else is
 shared. To add another region: copy an existing `build-<region>.js` + its folder's
 `index.html` (set the `<title>`, gate heading, and `MAP_CONFIG.storageKey`), then
-build + encrypt. Storage keys so far: `knox-map-key`, `atl-map-key`, `cle-map-key`.
+build + encrypt. Storage keys so far: `knox-map-key`, `atl-map-key`, `cle-map-key`,
+`wc-map-key`.
 
 ## How it fits together
 
@@ -35,8 +38,9 @@ build + encrypt. Storage keys so far: `knox-map-key`, `atl-map-key`, `cle-map-ke
   via Overpass (mirror fallback), dedupes, keeps the 2 nearest of each brand to
   each home, applies overrides/exclusions/manual stores, and writes that region's
   final `data.json`. Region-agnostic — no hand-edits after a run.
-- `build-data.js` (Knoxville) / `build-atlanta.js` / `build-cleveland.js` — thin
-  **region configs** that hand `buildRegion` their `HOMES`, `BRANDS`, `bbox`,
+- `build-data.js` (Knoxville) / `build-atlanta.js` / `build-cleveland.js` /
+  `build-wesleychapel.js` — thin **region configs** that hand `buildRegion` their
+  `HOMES`, `BRANDS`, `bbox`,
   `overpassNames`, `ADDRESS_OVERRIDES`, `STORE_EXCLUDE`, `MANUAL_STORES`,
   `EMERGENCY_ROOMS`, `DEFAULT_VIEW`, and `outfile` (`data.json` vs
   `atlanta/data.json`). `build-atlanta.js` `mkdir`s `atlanta/` first. Edit
@@ -101,6 +105,8 @@ node build-atlanta.js                                                # -> atlant
 node encrypt-data.js "the-password" atlanta/data.json atlanta/data.encrypted
 node build-cleveland.js                                              # -> cleveland/data.json
 node encrypt-data.js "the-password" cleveland/data.json cleveland/data.encrypted
+node build-wesleychapel.js                                           # -> wesleychapel/data.json
+node encrypt-data.js "the-password" wesleychapel/data.json wesleychapel/data.encrypted
 ```
 Then commit the `data.encrypted` (never the `data.json` — both are git-ignored at
 every depth). **Claude does not have the password** — when the data changes, ask

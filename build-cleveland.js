@@ -24,9 +24,24 @@ const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 
 const MANUAL_STORES = [
   // OSM's only nearby Cracker Barrels are in Athens & Ooltewah; the Cleveland one
   // isn't mapped. Address confirmed via Yelp/Yellow Pages.
-  { brand: 'crackerbarrel', name: 'Cracker Barrel — 1650 Clingan Ridge Dr NW', address: '1650 Clingan Ridge Dr NW, Cleveland, TN 37312', lat: 35.191922251446, lng: -84.883526305753 }
+  { brand: 'crackerbarrel', name: 'Cracker Barrel — 1650 Clingan Ridge Dr NW', address: '1650 Clingan Ridge Dr NW, Cleveland, TN 37312', lat: 35.191922251446, lng: -84.883526305753 },
+  // Nearest Texas Roadhouses are in the Chattanooga area (outside the build bbox),
+  // per the user. Added manually so Cleveland homes still show a TR drive time.
+  { brand: 'texasroadhouse', name: 'Texas Roadhouse — Hamilton Place, Chattanooga', address: '2020 Hamilton Place Blvd, Chattanooga, TN 37421', lat: 35.032573402549, lng: -85.165622131048 },
+  { brand: 'texasroadhouse', name: 'Texas Roadhouse — Hixson', address: '5362 Highway 153, Hixson, TN 37343', lat: 35.134753626874, lng: -85.246375135036 }
 ];
 
+// Curated non-brand destination layer: Chattanooga airport (CHA / Lovell Field)
+// so every home shows drive time to the airport (popup + Compare).
+const EXTRA_LAYERS = [
+  { key: 'airport', label: 'Airport', color: '#5B2C83', glyph: 'CHA', points: [
+    { name: 'Chattanooga Metropolitan (CHA / Lovell Field)', address: '1001 Airport Rd, Chattanooga, TN 37421', lat: 35.038048889247, lng: -85.195626028274 }
+  ]}
+];
+
+// Home-focused view. The airport (CHA, ~20mi SW) and Chattanooga-area Texas
+// Roadhouses sit off-frame by design — their drive times show in each home's
+// popup + the Compare grid; zoom out to see the pins.
 const DEFAULT_VIEW = { center: [35.19, -84.84], zoom: 11.5 };
 
 const BRANDS = [
@@ -55,5 +70,5 @@ buildRegion({
   UA, state: 'TN', stateFull: 'Tennessee', outfile: 'cleveland/data.json',
   bbox: '35.05,-85.00,35.42,-84.65', // Cleveland TN + margin (Athens N / toward Chattanooga SW)
   overpassNames: 'Food City|Walmart|Publix|Aldi|Target|Cracker Barrel|Olive Garden|Texas Roadhouse|Chick-?fil-?A|Zaxby|CVS|Walgreens|Home ?Depot|Lowe',
-  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, MANUAL_STORES, DEFAULT_VIEW
+  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });
