@@ -16,7 +16,8 @@ const HOMES = [
   { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/two-rivers-211258' },
   { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge', url: 'https://www.realtor.com/realestateandhomes-detail/30718-Pumpkin-Ridge-Dr_Wesley-Chapel_FL_33543_M61803-31662' },
   { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef', url: 'https://www.realtor.com/realestateandhomes-detail/30789-Parrot-Reef-Ct_Wesley-Chapel_FL_33545_M57488-99991' },
-  { q: 'The Estates by Lennar, Wesley Chapel, FL', lat: 28.300896432922933, lng: -82.27099695133808, label: 'The Estates by Lennar', url: 'https://www.redfin.com/FL/Wesley-Chapel/Twinflowers-The-Estates/community/38820612' }
+  { q: 'The Estates by Lennar, Wesley Chapel, FL', lat: 28.300896432922933, lng: -82.27099695133808, label: 'The Estates by Lennar', url: 'https://www.redfin.com/FL/Wesley-Chapel/Twinflowers-The-Estates/community/38820612' },
+  { q: 'Riverwood by Pulte, Zephyrhills, FL', lat: 28.181616893486055, lng: -82.19742405405273, label: 'Riverwood by Pulte', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/riverwood-211283' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
