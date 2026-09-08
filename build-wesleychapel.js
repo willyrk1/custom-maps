@@ -8,14 +8,15 @@ const UA = { 'User-Agent': 'wc-house-map/1.0 (wknight94@gmail.com)' };
 
 const HOMES = [
   { q: '6376 Atlantic Beach Ave, Wesley Chapel, FL 33545', lat: 28.250295011059, lng: -82.358274248976, label: '6376 Atlantic Beach' },
-  { q: '5150 Villagebrook Dr, Wesley Chapel, FL 33543', lat: 28.232147582569, lng: -82.365100140754, label: '5150 Villagebrook' },
-  { q: 'Woodcreek by D.R. Horton, Wesley Chapel, FL', lat: 28.18818316806442, lng: -82.27897021196196, label: 'Woodcreek by D.R. Horton' },
-  { q: 'Stonebridge North by Highland Homes, Wesley Chapel, FL', lat: 28.259108316649748, lng: -82.23109203011126, label: 'Stonebridge North by Highland Homes' },
-  { q: 'Bellamy Crossings by Lennar, Wesley Chapel, FL', lat: 28.329380705371086, lng: -82.35797559847985, label: 'Bellamy Crossings by Lennar' },
-  { q: 'Hilltop Vistas by Meritage, Wesley Chapel, FL', lat: 28.3395811844316, lng: -82.23717241830711, label: 'Hilltop Vistas by Meritage' },
-  { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers' },
-  { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge' },
-  { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef' }
+  { q: '5150 Villagebrook Dr, Wesley Chapel, FL 33543', lat: 28.232147582569, lng: -82.365100140754, label: '5150 Villagebrook', url: 'https://www.realtor.com/realestateandhomes-detail/5150-Villagebrook-Dr_Wesley-Chapel_FL_33544_M51845-23222' },
+  { q: 'Woodcreek by D.R. Horton, Wesley Chapel, FL', lat: 28.18818316806442, lng: -82.27897021196196, label: 'Woodcreek by D.R. Horton', url: 'https://www.drhorton.com/florida/tampa/wesley-chapel/woodcreek' },
+  { q: 'Stonebridge North by Highland Homes, Wesley Chapel, FL', lat: 28.259108316649748, lng: -82.23109203011126, label: 'Stonebridge North by Highland Homes', url: 'https://www.highlandhomes.org/new-homes/florida/tampa-bay/zephyrhills/stonebridge' },
+  { q: 'Bellamy Crossings by Lennar, Wesley Chapel, FL', lat: 28.329380705371086, lng: -82.35797559847985, label: 'Bellamy Crossings by Lennar', url: 'https://www.lennar.com/new-homes/florida/tampa-manatee/dade-city/bellamy-crossings' },
+  { q: 'Hilltop Vistas by Meritage, Wesley Chapel, FL', lat: 28.3395811844316, lng: -82.23717241830711, label: 'Hilltop Vistas by Meritage', url: 'https://www.meritagehomes.com/state/fl/tampa/hilltop-vistas' },
+  { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/two-rivers-211258' },
+  { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge', url: 'https://www.realtor.com/realestateandhomes-detail/30718-Pumpkin-Ridge-Dr_Wesley-Chapel_FL_33543_M61803-31662' },
+  { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef', url: 'https://www.realtor.com/realestateandhomes-detail/30789-Parrot-Reef-Ct_Wesley-Chapel_FL_33545_M57488-99991' },
+  { q: 'The Estates by Lennar, Wesley Chapel, FL', lat: 28.300896432922933, lng: -82.27099695133808, label: 'The Estates by Lennar', url: 'https://www.redfin.com/FL/Wesley-Chapel/Twinflowers-The-Estates/community/38820612' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
