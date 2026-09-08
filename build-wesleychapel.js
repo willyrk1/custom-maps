@@ -14,7 +14,8 @@ const HOMES = [
   { q: 'Bellamy Crossings by Lennar, Wesley Chapel, FL', lat: 28.329380705371086, lng: -82.35797559847985, label: 'Bellamy Crossings by Lennar' },
   { q: 'Hilltop Vistas by Meritage, Wesley Chapel, FL', lat: 28.3395811844316, lng: -82.23717241830711, label: 'Hilltop Vistas by Meritage' },
   { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers' },
-  { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge' }
+  { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge' },
+  { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
