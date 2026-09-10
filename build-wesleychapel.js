@@ -18,7 +18,6 @@ const HOMES = [
   { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef', url: 'https://www.realtor.com/realestateandhomes-detail/30789-Parrot-Reef-Ct_Wesley-Chapel_FL_33545_M57488-99991' },
   { q: 'The Estates by Lennar, Wesley Chapel, FL', lat: 28.300896432922933, lng: -82.27099695133808, label: 'The Estates by Lennar', url: 'https://www.redfin.com/FL/Wesley-Chapel/Twinflowers-The-Estates/community/38820612' },
   { q: 'Riverwood by Pulte, Zephyrhills, FL', lat: 28.181616893486055, lng: -82.19742405405273, label: 'Riverwood by Pulte', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/riverwood-211283' },
-  { q: '6542 Applewood Dr, Wesley Chapel, FL 33544', lat: 28.252671171897, lng: -82.376409567141, label: 'Food Pantry' },
   { q: 'Pasadena Ridge by Casa Fresca, Pasadena Hills, FL', lat: 28.291645320116757, lng: -82.24557470180268, label: 'Pasadena Ridge by Casa Fresca', url: 'https://www.casafrescahomes.com/tampa-area-fl/pasadena-hills/pasadena-ridge/' }
 ];
 
@@ -49,6 +48,14 @@ const MANUAL_STORES = [
   { brand: 'cvs',       name: 'CVS — 37943 Eiland Blvd',        address: '37943 Eiland Blvd, Zephyrhills, FL 33542', lat: 28.25187104341, lng: -82.189023450468 },
   { brand: 'walgreens', name: 'Walgreens — 6429 Gall Blvd',     address: '6429 Gall Blvd, Zephyrhills, FL 33542',    lat: 28.251045775685, lng: -82.18831495285 },
   { brand: 'walgreens', name: 'Walgreens — 36515 State Rd 54',  address: '36515 State Rd 54, Zephyrhills, FL 33541', lat: 28.229992049304, lng: -82.213133552736 }
+];
+
+// Curated non-brand destination layer(s), shown as their own store-style pins
+// with each home's nearest-home distance (same treatment as the airports).
+const EXTRA_LAYERS = [
+  { key: 'foodpantry', label: 'Food Pantry', color: '#8E44AD', glyph: 'FP', points: [
+    { name: 'Food Pantry — 6542 Applewood Dr', address: '6542 Applewood Dr, Wesley Chapel, FL 33544', lat: 28.252671171897, lng: -82.376409567141 }
+  ]}
 ];
 
 const DEFAULT_VIEW = { center: [28.26, -82.30], zoom: 11 };
@@ -83,5 +90,5 @@ buildRegion({
   UA, state: 'FL', stateFull: 'Florida', outfile: 'wesleychapel/data.json',
   bbox: '28.08,-82.50,28.38,-82.13', // Wesley Chapel + Wiregrass/outlets; S to New Tampa, W to Lutz, N+E to the newer homes & Zephyrhills retail; off dense central Tampa
   overpassNames: 'Publix|Walmart|Aldi|Winn.?Dixie|Sprouts|Target|Cracker Barrel|Olive Garden|Texas Roadhouse|Chick-?fil-?A|LongHorn|Glory Days|Sonny|Chili|CVS|Walgreens|Home ?Depot|Lowe',
-  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, STORE_EXCLUDE, MANUAL_STORES, DEFAULT_VIEW
+  HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, STORE_EXCLUDE, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });
