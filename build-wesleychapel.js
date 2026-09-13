@@ -49,7 +49,9 @@ const MANUAL_STORES = [
   { brand: 'cvs',       name: 'CVS — 36440 State Rd 54',        address: '36440 State Rd 54, Zephyrhills, FL 33541', lat: 28.229865467749, lng: -82.214499294274 },
   { brand: 'cvs',       name: 'CVS — 37943 Eiland Blvd',        address: '37943 Eiland Blvd, Zephyrhills, FL 33542', lat: 28.25187104341, lng: -82.189023450468 },
   { brand: 'walgreens', name: 'Walgreens — 6429 Gall Blvd',     address: '6429 Gall Blvd, Zephyrhills, FL 33542',    lat: 28.251045775685, lng: -82.18831495285 },
-  { brand: 'walgreens', name: 'Walgreens — 36515 State Rd 54',  address: '36515 State Rd 54, Zephyrhills, FL 33541', lat: 28.229992049304, lng: -82.213133552736 }
+  { brand: 'walgreens', name: 'Walgreens — 36515 State Rd 54',  address: '36515 State Rd 54, Zephyrhills, FL 33541', lat: 28.229992049304, lng: -82.213133552736 },
+  // Independent local pizzeria on SR 56 (not an OSM-matchable chain); geocoded via Census.
+  { brand: 'mamabs',    name: "Mama B's Pizzeria — 27607 State Rd 56", address: '27607 State Rd 56, Wesley Chapel, FL 33544', lat: 28.18583132413, lng: -82.360314234766 }
 ];
 
 // Curated non-brand destination layer(s), shown as their own store-style pins
@@ -78,6 +80,7 @@ const BRANDS = [
   { key: 'glorydays',     label: 'Glory Days',      match: /glory\s*days/i,        color: '#1D3F6E', glyph: 'GD' },
   { key: 'sonnys',        label: "Sonny's BBQ",     match: /sonny'?s/i,            color: '#B5121B', glyph: 'So' },
   { key: 'chilis',        label: "Chili's",         match: /chili'?s/i,            color: '#C8102E', glyph: 'Ch' },
+  { key: 'mamabs',        label: "Mama B's Pizzeria", match: /mama\s*b'?s/i,       color: '#C43E1C', glyph: 'MB' },
   // Essentials
   { key: 'target',        label: 'Target',          match: /target/i,              color: '#CC0000', glyph: 'Tg' },
   { key: 'cvs',           label: 'CVS',             match: /\bcvs\b/i,            color: '#CC0000', glyph: 'CVS'},
