@@ -20,7 +20,8 @@ const HOMES = [
   { q: 'Riverwood by Pulte, Zephyrhills, FL', lat: 28.181616893486055, lng: -82.19742405405273, label: 'Riverwood by Pulte', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/riverwood-211283' },
   { q: 'Pasadena Ridge by Casa Fresca, Pasadena Hills, FL', lat: 28.291645320116757, lng: -82.24557470180268, label: 'Pasadena Ridge by Casa Fresca', url: 'https://www.casafrescahomes.com/tampa-area-fl/pasadena-hills/pasadena-ridge/' },
   { q: '30346 Rattana Ct, Wesley Chapel, FL 33545', lat: 28.250901455512, lng: -82.314721257631, label: '30346 Rattana Ct' },
-  { q: '25515 Bruford Blvd, Land O Lakes, FL 34639', lat: 28.22471772382, lng: -82.393797067374, label: '25515 Bruford Blvd' }
+  { q: '25515 Bruford Blvd, Land O Lakes, FL 34639', lat: 28.22471772382, lng: -82.393797067374, label: '25515 Bruford Blvd' },
+  { q: '7306 Bridgeview Dr, Wesley Chapel, FL 33545', lat: 28.263236373321, lng: -82.287491008833, label: '7306 Bridgeview Dr' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
