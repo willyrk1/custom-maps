@@ -9,19 +9,12 @@ const UA = { 'User-Agent': 'wc-house-map/1.0 (wknight94@gmail.com)' };
 const HOMES = [
   { q: '6376 Atlantic Beach Ave, Wesley Chapel, FL 33545', lat: 28.250295011059, lng: -82.358274248976, label: '6376 Atlantic Beach' },
   { q: '5150 Villagebrook Dr, Wesley Chapel, FL 33543', lat: 28.232147582569, lng: -82.365100140754, label: '5150 Villagebrook', url: 'https://www.realtor.com/realestateandhomes-detail/5150-Villagebrook-Dr_Wesley-Chapel_FL_33544_M51845-23222' },
-  { q: 'Woodcreek by D.R. Horton, Wesley Chapel, FL', lat: 28.18818316806442, lng: -82.27897021196196, label: 'Woodcreek by D.R. Horton', url: 'https://www.drhorton.com/florida/tampa/wesley-chapel/woodcreek' },
-  { q: 'Stonebridge North by Highland Homes, Wesley Chapel, FL', lat: 28.259108316649748, lng: -82.23109203011126, label: 'Stonebridge North by Highland Homes', url: 'https://www.highlandhomes.org/new-homes/florida/tampa-bay/zephyrhills/stonebridge' },
-  { q: 'Bellamy Crossings by Lennar, Wesley Chapel, FL', lat: 28.329380705371086, lng: -82.35797559847985, label: 'Bellamy Crossings by Lennar', url: 'https://www.lennar.com/new-homes/florida/tampa-manatee/dade-city/bellamy-crossings' },
-  { q: 'Hilltop Vistas by Meritage, Wesley Chapel, FL', lat: 28.3395811844316, lng: -82.23717241830711, label: 'Hilltop Vistas by Meritage', url: 'https://www.meritagehomes.com/state/fl/tampa/hilltop-vistas' },
   { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/two-rivers-211258' },
-  { q: '30718 Pumpkin Ridge Dr, Wesley Chapel, FL 33543', lat: 28.221539325162, lng: -82.308256141168, label: '30718 Pumpkin Ridge', url: 'https://www.realtor.com/realestateandhomes-detail/30718-Pumpkin-Ridge-Dr_Wesley-Chapel_FL_33543_M61803-31662' },
   { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef', url: 'https://www.realtor.com/realestateandhomes-detail/30789-Parrot-Reef-Ct_Wesley-Chapel_FL_33545_M57488-99991' },
-  { q: 'The Estates by Lennar, Wesley Chapel, FL', lat: 28.300896432922933, lng: -82.27099695133808, label: 'The Estates by Lennar', url: 'https://www.redfin.com/FL/Wesley-Chapel/Twinflowers-The-Estates/community/38820612' },
   { q: 'Riverwood by Pulte, Zephyrhills, FL', lat: 28.181616893486055, lng: -82.19742405405273, label: 'Riverwood by Pulte', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/riverwood-211283' },
-  { q: 'Pasadena Ridge by Casa Fresca, Pasadena Hills, FL', lat: 28.291645320116757, lng: -82.24557470180268, label: 'Pasadena Ridge by Casa Fresca', url: 'https://www.casafrescahomes.com/tampa-area-fl/pasadena-hills/pasadena-ridge/' },
-  { q: '30346 Rattana Ct, Wesley Chapel, FL 33545', lat: 28.250901455512, lng: -82.314721257631, label: '30346 Rattana Ct' },
   { q: '25515 Bruford Blvd, Land O Lakes, FL 34639', lat: 28.22471772382, lng: -82.393797067374, label: '25515 Bruford Blvd' },
-  { q: '7306 Bridgeview Dr, Wesley Chapel, FL 33545', lat: 28.263236373321, lng: -82.287491008833, label: '7306 Bridgeview Dr' }
+  { q: '7306 Bridgeview Dr, Wesley Chapel, FL 33545', lat: 28.263236373321, lng: -82.287491008833, label: '7306 Bridgeview Dr' },
+  { q: '4250 Warwick Hills Dr, Wesley Chapel, FL 33543', lat: 28.21820732121, lng: -82.313992470182, label: '4250 Warwick Hills Dr' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
