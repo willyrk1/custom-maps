@@ -19,7 +19,9 @@ const HOMES = [
   { q: '670 Whitesburg Dr, Knoxville, TN 37918', lat: 36.032276381095, lng: -83.978672646594, label: '670 Whitesburg', url: 'https://www.realtor.com/realestateandhomes-detail/670-Whitesburg-Dr_Knoxville_TN_37918_M74569-79816' },
   { q: '4330 Edenfield Dr, Knoxville, TN 37938', lat: 36.094992709164, lng: -83.934275887183, label: '4330 Edenfield', url: 'https://www.realtor.com/realestateandhomes-detail/4330-Edenfield-Dr_Knoxville_TN_37938_M76747-58223' },
   { q: '1084 Hillside Ln, Lenoir City, TN 37771', lat: 35.791312444794, lng: -84.286388944228, label: '1084 Hillside', url: 'https://www.realtor.com/realestateandhomes-detail/1084-Hillside-Ln_Lenoir-City_TN_37771_M78193-71327' },
-  { q: '6861 Cardindale Dr, Knoxville, TN 37918', lat: 36.0375804644798, lng: -83.97459313021949, label: '6861 Cardindale', url: 'https://www.realtor.com/realestateandhomes-detail/6861-Cardindale-Dr_Knoxville_TN_37918_M83023-32715' }
+  { q: '6861 Cardindale Dr, Knoxville, TN 37918', lat: 36.0375804644798, lng: -83.97459313021949, label: '6861 Cardindale', url: 'https://www.realtor.com/realestateandhomes-detail/6861-Cardindale-Dr_Knoxville_TN_37918_M83023-32715' },
+  { q: '204 Paisley Reece Ln, Lenoir City, TN 37771', lat: 35.80438230411501, lng: -84.28504708990995, label: '204 Paisley Reece', url: 'https://www.realtor.com/realestateandhomes-detail/204-Paisley-Reece-Ln_Lenoir-City_TN_37771_M94677-56136' },
+  { q: '8919 Twisted Willow Ln, Knoxville, TN 37931', lat: 35.98999988158233, lng: -84.12711202047247, label: '8919 Twisted Willow' }
 ];
 
 // Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
