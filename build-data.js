@@ -35,7 +35,8 @@ const EMERGENCY_ROOMS = [
   { name: 'Parkwest Medical Center',                 address: '9352 Park West Blvd',       lat: 35.9178,   lng: -84.1026 },
   { name: 'Turkey Creek Medical Center (Tennova)',   address: '10820 Parkside Dr',         lat: 35.8988,   lng: -84.1443 },
   { name: 'Methodist Medical Center of Oak Ridge',   address: '990 Oak Ridge Turnpike',    lat: 36.0241,   lng: -84.2462 },
-  { name: 'Fort Loudoun Medical Center',             address: '550 Fort Loudoun Medical Center Dr', lat: 35.8251, lng: -84.2699 }
+  { name: 'Fort Loudoun Medical Center',             address: '550 Fort Loudoun Medical Center Dr', lat: 35.8251, lng: -84.2699 },
+  { name: 'Blount Memorial Hospital',                address: '907 E Lamar Alexander Pkwy, Maryville', lat: 35.755030542841, lng: -83.959230052709 }
 ];
 const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 'ER' };
 
