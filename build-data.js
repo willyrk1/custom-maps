@@ -91,7 +91,7 @@ const STORE_EXCLUDE = [
 
 buildRegion({
   UA, state: 'TN', stateFull: 'Tennessee', outfile: 'data.json',
-  bbox: '35.80,-84.50,36.20,-83.55', // Knoxville metro (Oak Ridge -> Corryton)
+  bbox: '35.70,-84.50,36.20,-83.55', // Knoxville metro (Oak Ridge -> Corryton), extended S to cover Maryville/Alcoa + Lenoir City retail
   overpassNames: 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Home ?Depot|Lowe|Kohl|Texas Roadhouse|Glory Days|Target|Publix',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, MANUAL_STORES, ADDRESS_OVERRIDES, STORE_EXCLUDE, DEFAULT_VIEW
 }).catch(e => { console.error('ERROR', e); process.exit(1); });
