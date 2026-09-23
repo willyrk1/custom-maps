@@ -21,7 +21,8 @@ const HOMES = [
   { q: '1084 Hillside Ln, Lenoir City, TN 37771', lat: 35.791312444794, lng: -84.286388944228, label: '1084 Hillside', url: 'https://www.realtor.com/realestateandhomes-detail/1084-Hillside-Ln_Lenoir-City_TN_37771_M78193-71327' },
   { q: '6861 Cardindale Dr, Knoxville, TN 37918', lat: 36.0375804644798, lng: -83.97459313021949, label: '6861 Cardindale', url: 'https://www.realtor.com/realestateandhomes-detail/6861-Cardindale-Dr_Knoxville_TN_37918_M83023-32715' },
   { q: '204 Paisley Reece Ln, Lenoir City, TN 37771', lat: 35.80438230411501, lng: -84.28504708990995, label: '204 Paisley Reece', url: 'https://www.realtor.com/realestateandhomes-detail/204-Paisley-Reece-Ln_Lenoir-City_TN_37771_M94677-56136' },
-  { q: '8919 Twisted Willow Ln, Knoxville, TN 37931', lat: 35.98999988158233, lng: -84.12711202047247, label: '8919 Twisted Willow' }
+  { q: '8919 Twisted Willow Ln, Knoxville, TN 37931', lat: 35.98999988158233, lng: -84.12711202047247, label: '8919 Twisted Willow' },
+  { q: '813 Mackenzie Dr, Maryville, TN 37804', lat: 35.78694124169715, lng: -83.92579596759629, label: '813 Mackenzie', url: 'https://www.realtor.com/realestateandhomes-detail/M8450716618' }
 ];
 
 // Emergency rooms are hospitals with a 24/7 ER — not a name-matchable "brand", so
