@@ -42,7 +42,10 @@ const ER_LAYER = { key: 'er', label: 'Emergency Room', color: '#D32F2F', glyph: 
 
 // Stores OSM doesn't have but the user wants shown — appended to their brand layer.
 const MANUAL_STORES = [
-  { brand: 'crackerbarrel', name: 'Cracker Barrel — 2920 S Mall Road', address: '2920 S Mall Road', lat: 36.029170072893, lng: -83.87301371725 }
+  { brand: 'crackerbarrel', name: 'Cracker Barrel — 2920 S Mall Road', address: '2920 S Mall Road', lat: 36.029170072893, lng: -83.87301371725 },
+  // Alcoa/Maryville stores OSM lacks entirely (web-confirmed; geocoded via Census).
+  { brand: 'kohls',     name: "Kohl's — 244 Hamilton Crossing Dr, Alcoa", address: '244 Hamilton Crossing Dr, Alcoa, TN 37701', lat: 35.767909518679, lng: -83.986262495602 },
+  { brand: 'homegoods', name: 'HomeGoods — 730 Watkins Rd, Maryville',    address: '730 Watkins Rd, Maryville, TN 37801',      lat: 35.750443231018, lng: -83.991418249748 }
 ];
 // The startup view (used when the URL has no hash).
 const DEFAULT_VIEW = { center: [35.97426, -84.01657], zoom: 11.5 };
@@ -79,6 +82,7 @@ const ADDRESS_OVERRIDES = [
   { brand: 'walgreens',      lat: 35.9730, lng: -83.9865, addr: '4423 Western Ave' },         // Western Ave (37921)
   { brand: 'walgreens',      lat: 35.8938, lng: -84.1742, addr: '601 N Campbell Station Rd' },// Farragut
   { brand: 'kohls',          lat: 35.8771, lng: -84.1655, addr: '11530 Kingston Pike' },       // Farragut
+  { brand: 'cvs',            lat: 35.76681, lng: -83.97249, addr: '111 S Hall Rd, Alcoa' },    // Alcoa (Hall Rd) — OSM had the pin, no address
   { brand: 'crackerbarrel',  lat: 36.0012, lng: -83.7786, addr: '1510 Cracker Barrel Lane' }, // Strawberry Plains
   { brand: 'texasroadhouse', lat: 35.9036, lng: -84.1512, addr: '11001 Turkey Dr' },          // Turkey Creek
   { brand: 'texasroadhouse', lat: 35.9277, lng: -84.0352, addr: '120 Morrell Rd' },           // West Knox
