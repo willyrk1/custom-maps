@@ -210,9 +210,14 @@ async function buildRegion(cfg) {
   }
 
   const data = { center: DEFAULT_VIEW.center, zoom: DEFAULT_VIEW.zoom, layers };
-  fs.writeFileSync(outfile, JSON.stringify(data, null, 2));
-  console.error('\nWrote ' + outfile + ' with ' + (layers.length-1) + ' brand layers + homes');
-  console.error('Next: node encrypt-data.js "<password>" ' + outfile + ' ' + outfile.replace(/data\.json$/, 'data.encrypted') + '  then commit it');
+  // The combined build (build-combined.js) passes skipWrite and merges the
+  // returned data across regions itself, so per-region files aren't written.
+  if (!cfg.skipWrite) {
+    fs.writeFileSync(outfile, JSON.stringify(data, null, 2));
+    console.error('\nWrote ' + outfile + ' with ' + (layers.length-1) + ' brand layers + homes');
+    console.error('Next: node encrypt-data.js "<password>" ' + outfile + ' ' + outfile.replace(/data\.json$/, 'data.encrypted') + '  then commit it');
+  }
+  return data;
 }
 
 module.exports = { buildRegion, haversineMi };

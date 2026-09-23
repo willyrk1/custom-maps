@@ -90,9 +90,13 @@ const STORE_EXCLUDE = [
   { brand: 'cvs', lat: 35.9727, lng: -83.9830 }  // 4406 Western Ave — closed & replaced
 ];
 
-buildRegion({
+// Region config. Exported so build-combined.js can import and merge it; run
+// directly (node build-data.js) it still builds this region's own data.json.
+const cfg = {
   UA, state: 'TN', stateFull: 'Tennessee', outfile: 'data.json',
   bbox: '35.70,-84.50,36.20,-83.55', // Knoxville metro (Oak Ridge -> Corryton), extended S to cover Maryville/Alcoa + Lenoir City retail
   overpassNames: 'Walmart|Kroger|Cracker Barrel|Olive Garden|CVS|Walgreens|Home ?Goods|Home ?Sense|Home ?Depot|Lowe|Kohl|Texas Roadhouse|Glory Days|Target|Publix',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, MANUAL_STORES, ADDRESS_OVERRIDES, STORE_EXCLUDE, DEFAULT_VIEW
-}).catch(e => { console.error('ERROR', e); process.exit(1); });
+};
+module.exports = cfg;
+if (require.main === module) buildRegion(cfg).catch(e => { console.error('ERROR', e); process.exit(1); });

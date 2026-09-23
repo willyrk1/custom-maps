@@ -39,8 +39,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 #gate .err { color: #b3261e; font-size: 13px; margin-top: 12px; min-height: 16px; }
 
 /* Routing panel */
+/* Sits below the region switcher (a Leaflet control in the top-right corner). */
 #route-panel {
-  position: absolute; top: 10px; right: 10px; z-index: 1000;
+  position: absolute; top: 84px; right: 10px; z-index: 1000;
   background: #fff; border: 1px solid #e2e2dd; border-radius: 12px;
   padding: 12px 14px; width: 230px; box-shadow: 0 4px 18px rgba(0,0,0,.12); font-size: 13px;
 }
@@ -99,6 +100,19 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 .layers-allnone button:hover { background: #f4f5f3; }
 .layers-allnone span { color: #bbb; }
+
+/* Region switcher — "Jump to area" dropdown (combined map only) */
+.region-switcher {
+  background: #fff; padding: 6px 8px; border-radius: 8px;
+  box-shadow: 0 1px 5px rgba(0,0,0,.3); font-size: 12px;
+}
+.region-switcher label {
+  display: block; font-weight: 600; color: #555; margin-bottom: 3px;
+}
+.region-switcher select {
+  border: 1px solid #d3d3cc; background: #fff; border-radius: 6px;
+  padding: 3px 6px; font-size: 13px; color: #333; max-width: 200px; cursor: pointer;
+}
 
 /* Clustered pins shown as a box of brand chips (breaks apart on zoom) */
 .cluster-wrap { background: none; border: none; }

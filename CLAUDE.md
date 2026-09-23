@@ -1,45 +1,60 @@
 # CLAUDE.md
 
-Private, password-protected Leaflet maps for house-hunting. Static site,
+Private, password-protected Leaflet map for house-hunting. Static site,
 deployable to GitHub Pages. Click any two pins → driving distance + time.
 
-**Four regions share one codebase** (`app.js` + `map.css` + the build engine):
-- **Knoxville** — repo root, live at https://willyrk1.github.io/custom-maps/
-- **Atlanta (west/south metro)** — the `atlanta/` subfolder,
-  live at https://willyrk1.github.io/custom-maps/atlanta/
-- **Cleveland, TN** — the `cleveland/` subfolder,
-  live at https://willyrk1.github.io/custom-maps/cleveland/
-- **Wesley Chapel, FL (north Tampa)** — the `wesleychapel/` subfolder,
-  live at https://willyrk1.github.io/custom-maps/wesleychapel/
+**ONE combined map now covers four areas** — Knoxville TN, Atlanta (W/S metro),
+Cleveland TN, and Wesley Chapel FL — all rendered on a single page at the repo
+root, live at https://willyrk1.github.io/custom-maps/. Layers are **merged by
+brand**: one "Walmart" layer spanning every area, one "Emergency Room" layer, one
+"Airport" layer (ATL + CHA), and one "Candidate homes" layer holding all areas'
+homes. A **"Jump to area" switcher** (top-right) flies to each area's view or an
+all-areas overview.
 
-Each region is just an `index.html` + a `data.encrypted`; everything else is
-shared. To add another region: copy an existing `build-<region>.js` + its folder's
-`index.html` (set the `<title>`, gate heading, and `MAP_CONFIG.storageKey`), then
-build + encrypt. Storage keys so far: `knox-map-key`, `atl-map-key`, `cle-map-key`,
-`wc-map-key`.
+The four area **subfolders** (`atlanta/`, `cleveland/`, `wesleychapel/`) are now
+**redirect stubs**: each `index.html` deep-links to the combined map at that
+area's `#zoom/lat/lng`, so old bookmarks keep working. Their `data.encrypted`
+files are now unused (the combined `data.json`/`data.encrypted` at the root is the
+only live data) but kept for history. **One shared password** unlocks everything;
+the root page keeps `storageKey: 'knox-map-key'` so existing visitors stay signed
+in. (The old per-area storage keys `atl-map-key`/`cle-map-key`/`wc-map-key` are
+now orphaned in visitors' localStorage — harmless.)
+
+To add another area: add a `build-<area>.js` config (see below), register it in
+`build-combined.js`'s `REGIONS` array (key + label), optionally add a
+`<area>/index.html` redirect stub, then rebuild + encrypt.
 
 ## How it fits together
 
-- `map.css` — all the shared styles, linked by every region's `index.html`
-  (root links `map.css`, `atlanta/` links `../map.css`). Edit styling here once.
-- `app.js` — shared by every region. Decrypts `data.encrypted` in the browser
+- `map.css` — all the shared styles, linked by the root `index.html` as
+  `map.css?v=N`. Edit styling here once.
+- `app.js` — the whole client. Decrypts `data.encrypted` in the browser
   (AES-256-GCM / PBKDF2 via Web Crypto), renders layered markers, click-to-route
-  through OSRM, the Compare panel, deep-linking. Region-specific bits come from
-  `window.MAP_CONFIG` set inline in each page (currently just `storageKey`, the
-  per-device password-memory key — `knox-map-key` vs `atl-map-key` so the two
-  maps don't collide in localStorage). `data.encrypted`/`data.json` load by
-  **relative** path, so each folder automatically reads its own.
-- `index.html` (root = Knoxville) / `atlanta/index.html` — the per-region page
-  shell: password gate + map container + routing/compare panels, its own
-  `<title>`/gate heading, its `MAP_CONFIG`, and `<script src="app.js?v=N">`
-  (root) or `../app.js?v=N` (subfolders). Otherwise identical — keep them in sync.
+  through OSRM, the Compare panel, deep-linking, and the **region switcher**
+  (`addRegionSwitcher`, built only when `data.regions` is present). Page-specific
+  bits come from `window.MAP_CONFIG` (just `storageKey`). `data.encrypted`/
+  `data.json` load by **relative** path.
+- `index.html` (root) — the combined-map page shell: password gate + map
+  container + routing/compare panels, `<title>`, gate heading, its `MAP_CONFIG`,
+  and `<script src="app.js?v=N">` + `map.css?v=N`. The `atlanta/`, `cleveland/`,
+  `wesleychapel/` `index.html` files are tiny **redirect stubs** (no app.js/CSS).
+- `build-combined.js` — the **canonical build**. Imports the four area configs,
+  runs each through `buildRegion({...cfg, skipWrite:true})`, and **merges their
+  layers by brand** into the root `data.json`, adding a `regions` array (key,
+  label, center, zoom) that drives the switcher and a southeast-US `OVERVIEW`
+  default view. Run it, then encrypt the root `data.json`. Store's precomputed
+  "Nearest home" stays correct after merge because areas don't overlap.
 - `build-lib.js` — the **shared build engine** (`buildRegion(cfg)`): geocodes
   homes (explicit `lat`/`lng` skips it), pulls brand locations from OpenStreetMap
   via Overpass (mirror fallback), dedupes, keeps the 2 nearest of each brand to
-  each home, applies overrides/exclusions/manual stores, and writes that region's
-  final `data.json`. Region-agnostic — no hand-edits after a run.
+  each home, applies overrides/exclusions/manual stores. Returns the region's
+  `data` object; writes its own `data.json` unless `cfg.skipWrite` is set (the
+  combined build sets it and merges in memory). Region-agnostic.
 - `build-data.js` (Knoxville) / `build-atlanta.js` / `build-cleveland.js` /
-  `build-wesleychapel.js` — thin **region configs** that hand `buildRegion` their
+  `build-wesleychapel.js` — thin **area configs**. Each defines `cfg`,
+  `module.exports = cfg`, and runs its own build only when executed directly
+  (`require.main === module`), so `build-combined.js` can import the config
+  without triggering a build. They hand `buildRegion` their
   `HOMES`, `BRANDS`, `bbox`,
   `overpassNames`, `ADDRESS_OVERRIDES`, `STORE_EXCLUDE`, `MANUAL_STORES`,
   `EMERGENCY_ROOMS`, `DEFAULT_VIEW`, and `outfile` (`data.json` vs

@@ -551,6 +551,32 @@ function addAllNoneToggle(ctrl) {
   });
 }
 
+// Region switcher (combined map only): a "Jump to area" dropdown that flies the
+// view to each region's default center/zoom, plus an overview of all of them.
+// Built only when data.regions is present (single-region data.json omits it).
+function addRegionSwitcher(regions, overview) {
+  if (!regions || !regions.length) return;
+  const ctrl = L.control({ position: 'topright' });
+  ctrl.onAdd = function () {
+    const div = L.DomUtil.create('div', 'region-switcher leaflet-bar');
+    div.innerHTML = '<label for="region-select">Jump to area</label>' +
+      '<select id="region-select"><option value="">Overview (all areas)</option>' +
+      regions.map((r, i) => `<option value="${i}">${escapeHtml(r.label)}</option>`).join('') +
+      '</select>';
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
+    const sel = div.querySelector('select');
+    sel.addEventListener('change', () => {
+      const v = sel.value;
+      const target = v === '' ? overview : regions[+v];
+      if (target) map.setView(target.center, target.zoom);
+      updateHash();
+    });
+    return div;
+  };
+  ctrl.addTo(map);
+}
+
 function initMap(data) {
   map = L.map('map', { zoomSnap: 0.5, zoomDelta: 0.5 });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -628,6 +654,8 @@ function initMap(data) {
 
   const layersCtrl = L.control.layers(null, overlays, { collapsed: false, position: 'topleft' }).addTo(map);
   addAllNoneToggle(layersCtrl);
+  // Combined map: offer a "Jump to area" switcher (no-op for single-region data).
+  addRegionSwitcher(data.regions, { center: data.center, zoom: data.zoom });
   map.on('overlayadd overlayremove', updateHash); // persist toggles to the URL
 
   // Remember each layer's checkbox (same order as layerIndex) so we can re-sync

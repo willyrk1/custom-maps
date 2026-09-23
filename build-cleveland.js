@@ -68,9 +68,13 @@ const BRANDS = [
 
 fs.mkdirSync('cleveland', { recursive: true });
 
-buildRegion({
+// Region config. Exported so build-combined.js can import and merge it; run
+// directly (node build-cleveland.js) it still builds cleveland/data.json.
+const cfg = {
   UA, state: 'TN', stateFull: 'Tennessee', outfile: 'cleveland/data.json',
   bbox: '35.05,-85.00,35.42,-84.65', // Cleveland TN + margin (Athens N / toward Chattanooga SW)
   overpassNames: 'Food City|Walmart|Publix|Aldi|Target|Cracker Barrel|Olive Garden|Texas Roadhouse|Chick-?fil-?A|Zaxby|CVS|Walgreens|Home ?Depot|Lowe',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
-}).catch(e => { console.error('ERROR', e); process.exit(1); });
+};
+module.exports = cfg;
+if (require.main === module) buildRegion(cfg).catch(e => { console.error('ERROR', e); process.exit(1); });

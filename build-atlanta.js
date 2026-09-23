@@ -89,9 +89,13 @@ const MANUAL_STORES = [
 
 fs.mkdirSync('atlanta', { recursive: true });
 
-buildRegion({
+// Region config. Exported so build-combined.js can import and merge it; run
+// directly (node build-atlanta.js) it still builds atlanta/data.json.
+const cfg = {
   UA, state: 'GA', stateFull: 'Georgia', outfile: 'atlanta/data.json',
   bbox: '33.30,-85.40,34.32,-84.47', // Newnan (S) / Cartersville (N) / Cedartown–Rockmart (W) / Carrollton / Douglasville / Dallas–Hiram–Acworth / Kennesaw–Woodstock (E). East edge kept off dense Sandy Springs/Roswell so the Overpass query doesn't time out.
   overpassNames: 'Publix|Kroger|Walmart|Ingles|Aldi|Food ?Lion|Chick-?fil-?A|Cracker Barrel|Olive Garden|Texas Roadhouse|LongHorn|Zaxby|Target|CVS|Walgreens|Home ?Depot|Lowe',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
-}).catch(e => { console.error('ERROR', e); process.exit(1); });
+};
+module.exports = cfg;
+if (require.main === module) buildRegion(cfg).catch(e => { console.error('ERROR', e); process.exit(1); });

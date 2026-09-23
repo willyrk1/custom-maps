@@ -85,9 +85,13 @@ const BRANDS = [
 
 fs.mkdirSync('wesleychapel', { recursive: true });
 
-buildRegion({
+// Region config. Exported so build-combined.js can import and merge it; run
+// directly (node build-wesleychapel.js) it still builds wesleychapel/data.json.
+const cfg = {
   UA, state: 'FL', stateFull: 'Florida', outfile: 'wesleychapel/data.json',
   bbox: '28.08,-82.50,28.38,-82.13', // Wesley Chapel + Wiregrass/outlets; S to New Tampa, W to Lutz, N+E to the newer homes & Zephyrhills retail; off dense central Tampa
   overpassNames: 'Publix|Walmart|Aldi|Winn.?Dixie|Sprouts|Target|Cracker Barrel|Olive Garden|Texas Roadhouse|Chick-?fil-?A|LongHorn|Glory Days|Sonny|Chili|CVS|Walgreens|Home ?Depot|Lowe',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, ADDRESS_OVERRIDES, STORE_EXCLUDE, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
-}).catch(e => { console.error('ERROR', e); process.exit(1); });
+};
+module.exports = cfg;
+if (require.main === module) buildRegion(cfg).catch(e => { console.error('ERROR', e); process.exit(1); });
