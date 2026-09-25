@@ -11,7 +11,6 @@ const HOMES = [
   { q: '220 Hollow Rd NE, Cleveland, TN 37323', lat: 35.144811199804316, lng: -84.79508898607234, label: '220 Hollow Rd', url: 'https://www.realtor.com/realestateandhomes-detail/220-Hollow-Rd-NE_Cleveland_TN_37323_M82459-56528' },
   { q: '162 Lower Woods Trl NE, Cleveland, TN 37323', lat: 35.167832609967896, lng: -84.81285004232919, label: '162 Lower Woods', url: 'https://www.realtor.com/realestateandhomes-detail/162-Lower-Woods-Trl-NE_Cleveland_TN_37323_M88335-25797' },
   { q: '132 Covy Ct, Cleveland, TN 37312', lat: 35.234447830737395, lng: -84.80542830811267, label: '132 Covy Ct', url: 'https://www.realtor.com/realestateandhomes-detail/M8697296249' },
-  { q: 'Fairview Hills by DR Horton, Cleveland, TN', lat: 35.151703884833765, lng: -84.82556084719111, label: 'Fairview Hills by DR Horton', url: 'https://www.drhorton.com/tennessee/chattanooga/cleveland/fairview-hills/qmis/2296-chelle-drive-ne?event=hotw' },
   { q: '5131 Shelterwood Dr NE, Cleveland, TN 37312', lat: 35.218018890136186, lng: -84.82366722690378, label: '5131 Shelterwood Dr', url: 'https://www.zillow.com/homedetails/5131-Shelterwood-Dr-NE-Cleveland-TN-37312/337730574_zpid/' },
   { q: '4984 Skyline Way NE Unit 85, Cleveland, TN 37312', lat: 35.21532836111239, lng: -84.8193881698392, label: '4984 Skyline Way', url: 'https://www.realtor.com/realestateandhomes-detail/4984-Skyline-Way-NE-85_Cleveland_TN_37312_M95571-11666' }
 ];
