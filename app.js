@@ -144,7 +144,7 @@ function escapeHtml(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function popupHtml(point, isHome) {
+function popupHtml(point, isHome, markerOnly) {
   let rows = '';
   if (point.details) {
     for (const [k, v] of Object.entries(point.details)) {
@@ -156,9 +156,12 @@ function popupHtml(point, isHome) {
   const link = point.url
     ? `<div class="pop-link"><a href="${escapeHtml(point.url)}" target="_blank" rel="noopener noreferrer">Website ↗</a></div>`
     : '';
-  return `<div class="pname">${escapeHtml(point.name)}</div>` + link + cmp +
-    (rows ? `<table>${rows}</table>` : '') +
+  // Marker-only reference pins (e.g. a site to avoid) show just name/link/details —
+  // no nearest-places list and no Compare button.
+  const near = markerOnly ? '' :
     `<div class="near-list"><div class="near-loading">Finding nearest places…</div></div>`;
+  return `<div class="pname">${escapeHtml(point.name)}</div>` + link + cmp +
+    (rows ? `<table>${rows}</table>` : '') + near;
 }
 
 // Geo helpers for the nearest-places list.
@@ -610,13 +613,18 @@ function initMap(data) {
     // and sit above the store markers (zIndexOffset) so their label stays legible
     // even when a nearby store cluster is close by.
     const isHomes = layer.id === 'homes';
-    const group = isHomes ? L.layerGroup() : L.featureGroup.subGroup(parent);
+    // Marker-only layers (e.g. a data-center site to avoid) are plain reference
+    // pins: not clustered, kept out of allPoints/brands so they never appear in
+    // nearest-places lists or the Compare grid.
+    const markerOnly = !!layer.markerOnly;
+    const plain = isHomes || markerOnly; // plain = own layerGroup at exact coords, not clustered
+    const group = plain ? L.layerGroup() : L.featureGroup.subGroup(parent);
     layerIndex.push({ id: layer.id, group });
     const layerMeta = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' };
-    if (!isHomes) brands.push({ id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' });
+    if (!isHomes && !markerOnly) brands.push({ id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' });
     (layer.points || []).forEach(point => {
-      allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, layer: layerMeta });
-      const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point), zIndexOffset: isHomes ? 1000 : 0 });
+      if (!markerOnly) allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, layer: layerMeta });
+      const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point), zIndexOffset: plain ? 1000 : 0 });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
       const homeIdx = isHomes ? homes.length : -1;
@@ -624,7 +632,8 @@ function initMap(data) {
       if (point.label) {
         // Clicking the label opens the popup, same as clicking the pin. We wire the
         // click explicitly (interactive:true alone doesn't reliably forward it).
-        m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: 'home-label', interactive: true });
+        // Homes use the green .home-label; other labeled pins get .site-label.
+        m.bindTooltip(point.label, { permanent: true, direction: 'right', offset: [12, 0], className: isHomes ? 'home-label' : 'site-label', interactive: true });
         m.on('tooltipopen', (e) => {
           const el = e.tooltip.getElement();
           if (el && !el._clickWired) {
@@ -633,13 +642,13 @@ function initMap(data) {
           }
         });
       }
-      m.bindPopup(popupHtml(point, isHomes));
+      m.bindPopup(popupHtml(point, isHomes, markerOnly));
       m.on('popupopen', (e) => {
         if (isHomes) {
           const btn = e.popup.getElement().querySelector('.cmp-btn');
           if (btn) btn.addEventListener('click', () => { map.closePopup(); openCompare(homeIdx); });
         }
-        populateNearest(point, layer, e.popup);
+        if (!markerOnly) populateNearest(point, layer, e.popup);
       });
       m.addTo(group);
     });

@@ -39,6 +39,11 @@ const MANUAL_STORES = [
 const EXTRA_LAYERS = [
   { key: 'airport', label: 'Airport', color: '#5B2C83', glyph: 'CHA', points: [
     { name: 'Chattanooga Metropolitan (CHA / Lovell Field)', address: '1001 Airport Rd, Chattanooga, TN 37421', lat: 35.038048889247, lng: -85.195626028274 }
+  ]},
+  // Reference marker only (a potential data-center site to AVOID): no drive times,
+  // kept out of nearest-places lists + Compare. Distinct pink pin + label.
+  { key: 'projectriver', label: 'Project River (data center?)', color: '#C2185B', glyph: 'PR', markerOnly: true, points: [
+    { name: 'Project River — potential data center site', label: 'Project River', url: 'https://projectriver.energy/the-project/#site-layout', lat: 35.315942810480855, lng: -84.80502009034589 }
   ]}
 ];
 

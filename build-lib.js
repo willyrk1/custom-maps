@@ -196,17 +196,25 @@ async function buildRegion(cfg) {
 
   // Extra hand-curated destination layers (e.g. an airport) — non-brand points
   // emitted as their own layer, all shown, each with its nearest-home distance.
+  // A `markerOnly: true` layer is a plain reference pin (e.g. a site to avoid):
+  // it carries no nearest-home distance and app.js keeps it OUT of the
+  // nearest-places lists and the Compare grid. Points may carry `label` (a
+  // permanent map label) and `url` (a popup link).
   for (const L of EXTRA_LAYERS) {
-    layers.push({
-      id: L.key, name: L.label, color: L.color, glyph: L.glyph,
-      points: L.points.map(pt => {
-        const details = {};
-        if (pt.address) details.Address = pt.address;
-        details['Nearest home'] = Math.min(...homes.map(h => haversineMi(h, pt))).toFixed(1) + ' mi';
-        return { name: pt.name, lat: pt.lat, lng: pt.lng, details };
-      })
+    const layer = { id: L.key, name: L.label, color: L.color, glyph: L.glyph };
+    if (L.markerOnly) layer.markerOnly = true;
+    layer.points = L.points.map(pt => {
+      const details = {};
+      if (pt.address) details.Address = pt.address;
+      if (!L.markerOnly) details['Nearest home'] = Math.min(...homes.map(h => haversineMi(h, pt))).toFixed(1) + ' mi';
+      const out = { name: pt.name, lat: pt.lat, lng: pt.lng };
+      if (pt.label) out.label = pt.label;
+      if (pt.url) out.url = pt.url;
+      if (Object.keys(details).length) out.details = details;
+      return out;
     });
-    console.error(`  ${L.label}: ${L.points.length} shown`);
+    layers.push(layer);
+    console.error(`  ${L.label}: ${L.points.length} shown${L.markerOnly ? ' (marker only)' : ''}`);
   }
 
   const data = { center: DEFAULT_VIEW.center, zoom: DEFAULT_VIEW.zoom, layers };

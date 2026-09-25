@@ -44,6 +44,7 @@ const OVERVIEW = { center: [32.1, -83.4], zoom: 6 };
       if (!m) {
         // First region to define this brand sets its name/color/glyph.
         m = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph, points: [] };
+        if (layer.markerOnly) m.markerOnly = true; // carry marker-only reference layers through
         merged.set(layer.id, m);
         order.push(layer.id);
       }
