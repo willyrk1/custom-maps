@@ -79,6 +79,12 @@ To add another area: add a `build-<area>.js` config (see below), register it in
     the `Airport` layer (ATL) so every home shows drive time to Hartsfield-Jackson.
     Rendered by the same generic `app.js` code as any layer (legend chip, cluster
     glyph, nearest-places row, Compare row) — no app.js change to add one.
+    A `markerOnly: true` EXTRA_LAYER (e.g. Cleveland's "Project River" data-center
+    site to avoid) is instead a plain reference pin: no nearest-home distance, and
+    `app.js` keeps it OUT of allPoints/brands so it never shows in nearest-places
+    lists or the Compare grid. Its points may carry `label` (a permanent map label,
+    styled `.site-label` pink instead of the green home label) and `url` (popup
+    link). `build-combined.js` preserves the `markerOnly` flag through the merge.
   - `MANUAL_STORES` — stores OSM lacks (e.g. the S Mall Cracker Barrel, the Austell
     & Cartersville Olive Gardens, the Cleveland Cracker Barrel), appended to their
     brand layer every build. If that brand had **zero** OSM matches (so no layer
