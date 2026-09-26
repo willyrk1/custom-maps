@@ -13,7 +13,8 @@ const HOMES = [
   { q: '132 Covy Ct, Cleveland, TN 37312', lat: 35.234447830737395, lng: -84.80542830811267, label: '132 Covy Ct', url: 'https://www.realtor.com/realestateandhomes-detail/M8697296249' },
   { q: '5131 Shelterwood Dr NE, Cleveland, TN 37312', lat: 35.218018890136186, lng: -84.82366722690378, label: '5131 Shelterwood Dr', url: 'https://www.zillow.com/homedetails/5131-Shelterwood-Dr-NE-Cleveland-TN-37312/337730574_zpid/' },
   { q: '4984 Skyline Way NE Unit 85, Cleveland, TN 37312', lat: 35.21532836111239, lng: -84.8193881698392, label: '4984 Skyline Way', url: 'https://www.realtor.com/realestateandhomes-detail/4984-Skyline-Way-NE-85_Cleveland_TN_37312_M95571-11666' },
-  { q: '2029 Pearl Dr SW, Cleveland, TN 37311', lat: 35.141714751225, lng: -84.908790032726, label: '2029 Pearl Dr' }
+  { q: '2029 Pearl Dr SW, Cleveland, TN 37311', lat: 35.141714751225, lng: -84.908790032726, label: '2029 Pearl Dr' },
+  { q: '540 Clintons Pass NW, Cleveland, TN 37312', lat: 35.20907974868267, lng: -84.90964797871132, label: '540 Clintons Pass', url: 'https://www.realtor.com/realestateandhomes-detail/540-Clintons-Pass-NW_Cleveland_TN_37312_M76447-23920' }
 ];
 
 // Hospitals with a 24/7 ER in/around Cleveland (coords via US Census geocoder).
