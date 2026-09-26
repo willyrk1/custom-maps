@@ -152,6 +152,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
 }
 .cmp-btn:hover { background: #178a63; }
+.cmp-disabled-hint { margin: 6px 0 2px; font-size: 11px; color: #8a8a85; font-style: italic; }
 
 /* House-to-house comparison panel (a bottom bar so its grid has room to
    scroll sideways). Rows = brands, columns = candidate homes. */

@@ -126,6 +126,9 @@ let homes = [];      // [{ idx, point, marker }] candidate homes, for the compar
 let brands = [];     // [{ id, name, color, glyph }] store brands = row order in the compare grid
 let compareState = null; // { houses:number[], selecting:boolean } while the compare panel is open
 let houseTimes = {}; // homeIdx -> { brandId: pick } | 'loading' (each home's nearest of every brand)
+let regionsMeta = []; // combined map: [{key,label,center,zoom}]; empty for a single-region map
+let currentRegion = null; // key of the area currently in view (null = Overview / none)
+let regionSelectEl = null; // the "Jump to area" <select>, kept in sync with the view
 
 function makeIcon(layer, point) {
   if (point.iconUrl) {
@@ -185,9 +188,12 @@ function angleDiff(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360
 // not at src's own location. Falls back to a straight-line estimate (~30 mph) if
 // OSRM is slow/unavailable. Returns fresh copies so callers can compute per-source
 // times independently (the compare panel does this for several homes at once).
-async function computeCandTimes(src, srcLayerId) {
+async function computeCandTimes(src, srcLayerId, region) {
   const cands = allPoints
     .filter(p => p.layer.id !== srcLayerId &&
+      // Stay within one area when points are region-tagged (combined map), so a
+      // home never pulls stores/homes from a different region hundreds of miles away.
+      (!region || p.region === region) &&
       !(Math.abs(p.lat - src.lat) < 1e-9 && Math.abs(p.lng - src.lng) < 1e-9))
     .map(p => ({ name: p.name, lat: p.lat, lng: p.lng, layer: p.layer }));
   if (!cands.length) return cands;
@@ -218,8 +224,8 @@ async function computeCandTimes(src, srcLayerId) {
 
 // Each home's nearest store of EVERY brand (one per brand) → { brandId: pick }.
 // Used to fill a column of the compare grid.
-async function nearestByBrand(src) {
-  const cands = await computeCandTimes(src, 'homes');
+async function nearestByBrand(src, region) {
+  const cands = await computeCandTimes(src, 'homes', region);
   const out = {};
   cands.forEach(p => { const cur = out[p.layer.id]; if (!cur || p._min < cur._min) out[p.layer.id] = p; });
   return out;
@@ -233,7 +239,7 @@ async function populateNearest(src, srcLayer, popup) {
   const listEl = el && el.querySelector('.near-list');
   if (!listEl) return;
 
-  const cands = await computeCandTimes(src, srcLayer.id);
+  const cands = await computeCandTimes(src, srcLayer.id, src.region);
   if (!cands.length) { listEl.innerHTML = '<div class="near-empty">Nothing else to compare.</div>'; return; }
 
   const byBrand = {};
@@ -277,7 +283,10 @@ async function populateNearest(src, srcLayer, popup) {
 function homeLabel(idx) { const p = homes[idx].point; return p.label || p.name; }
 
 function openCompare(homeIdx) {
-  compareState = { houses: [homeIdx], selecting: true, sort: null }; // start by picking a 2nd home
+  // Scope the whole comparison to this home's area — only same-area homes can be
+  // added and only same-area stores fill the grid.
+  const region = homes[homeIdx].point.region || null;
+  compareState = { houses: [homeIdx], selecting: true, sort: null, region };
   document.getElementById('compare-panel').hidden = false;
   renderCompare();
 }
@@ -289,7 +298,8 @@ function closeCompare() {
 function ensureHouseTimes(idx) {
   if (houseTimes[idx]) return; // resolved or already loading
   houseTimes[idx] = 'loading';
-  nearestByBrand(homes[idx].point).then(res => { houseTimes[idx] = res; if (compareState) renderCompare(); });
+  const region = compareState ? compareState.region : (homes[idx].point.region || null);
+  nearestByBrand(homes[idx].point, region).then(res => { houseTimes[idx] = res; if (compareState) renderCompare(); });
 }
 
 function renderCompare() {
@@ -307,12 +317,18 @@ function renderCompare() {
         `${escapeHtml(homeLabel(idx))}<span class="cmp-arrow">${arrow}</span></th>`;
     }).join('') + '</tr>';
 
+  // Only show brand rows that actually exist in this comparison's area.
+  const regionBrandIds = compareState.region
+    ? new Set(allPoints.filter(p => p.region === compareState.region).map(p => p.layer.id))
+    : null;
+  const baseBrands = regionBrandIds ? brands.filter(b => regionBrandIds.has(b.id)) : brands;
+
   // Row order: default = data order; if a house header was clicked, sort brands by
   // that house's drive time (missing/loading data sinks to the bottom).
-  let orderedBrands = brands;
+  let orderedBrands = baseBrands;
   const sort = compareState.sort, sortHt = sort && houseTimes[sort.house];
   if (sort && sortHt && sortHt !== 'loading') {
-    orderedBrands = brands.slice().sort((a, b) => {
+    orderedBrands = baseBrands.slice().sort((a, b) => {
       const va = sortHt[a.id] ? sortHt[a.id]._min : Infinity;
       const vb = sortHt[b.id] ? sortHt[b.id]._min : Infinity;
       return (va - vb) * sort.dir;
@@ -333,7 +349,8 @@ function renderCompare() {
 
   // Trailing column: the Compare button, or (while selecting) a picker of the
   // homes not yet added. Compare sits further right as more homes are added.
-  const remaining = homes.map(h => h.idx).filter(idx => !houses.includes(idx));
+  const remaining = homes.map(h => h.idx).filter(idx => !houses.includes(idx) &&
+    (!compareState.region || (homes[idx].point.region || null) === compareState.region));
   let add = '';
   if (compareState.selecting) {
     add = `<div class="cmp-add"><div class="cmp-picker-hd">Add a home</div>` +
@@ -564,23 +581,45 @@ function addRegionSwitcher(regions, overview) {
     const div = L.DomUtil.create('div', 'region-switcher leaflet-bar');
     div.innerHTML = '<label for="region-select">Jump to area</label>' +
       '<select id="region-select"><option value="">Overview (all areas)</option>' +
-      regions.map((r, i) => `<option value="${i}">${escapeHtml(r.label)}</option>`).join('') +
+      regions.map(r => `<option value="${escapeHtml(r.key)}">${escapeHtml(r.label)}</option>`).join('') +
       '</select>';
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
-    const sel = div.querySelector('select');
-    sel.addEventListener('change', () => {
-      const v = sel.value;
-      const target = v === '' ? overview : regions[+v];
-      if (target) map.setView(target.center, target.zoom);
-      updateHash();
+    regionSelectEl = div.querySelector('select');
+    regionSelectEl.addEventListener('change', () => {
+      const key = regionSelectEl.value;
+      const target = key === '' ? overview : regions.find(r => r.key === key);
+      if (target) map.setView(target.center, target.zoom); // moveend → syncRegion updates currentRegion
     });
     return div;
   };
   ctrl.addTo(map);
 }
 
+// Which area is in view? The one whose center the map is near (and zoomed into);
+// null = Overview / none. Regions are >100mi apart, so a 25mi/zoom≥8 test is safe.
+function computeCurrentRegion() {
+  if (!regionsMeta.length || !map) return null;
+  const c = map.getCenter(), z = map.getZoom();
+  if (z < 8) return null;
+  let bestKey = null, bestD = Infinity;
+  regionsMeta.forEach(r => {
+    const d = haversineMi({ lat: c.lat, lng: c.lng }, { lat: r.center[0], lng: r.center[1] });
+    if (d < bestD) { bestD = d; bestKey = r.key; }
+  });
+  return bestD < 25 ? bestKey : null;
+}
+// Keep currentRegion + the switcher's selection in step with the view.
+function syncRegion() {
+  currentRegion = computeCurrentRegion();
+  if (regionSelectEl && regionSelectEl.value !== (currentRegion || '')) regionSelectEl.value = currentRegion || '';
+}
+// Compare is an in-area tool: allowed on a single-region map, or on the combined
+// map only while zoomed into an area (disabled in the Overview).
+function compareAllowed() { return regionsMeta.length === 0 || currentRegion !== null; }
+
 function initMap(data) {
+  regionsMeta = data.regions || [];
   map = L.map('map', { zoomSnap: 0.5, zoomDelta: 0.5 });
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -623,7 +662,7 @@ function initMap(data) {
     const layerMeta = { id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' };
     if (!isHomes && !markerOnly) brands.push({ id: layer.id, name: layer.name, color: layer.color, glyph: layer.glyph || '' });
     (layer.points || []).forEach(point => {
-      if (!markerOnly) allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, layer: layerMeta });
+      if (!markerOnly) allPoints.push({ name: point.name, lat: point.lat, lng: point.lng, region: point.region, layer: layerMeta });
       const m = L.marker([point.lat, point.lng], { icon: makeIcon(layer, point), zIndexOffset: plain ? 1000 : 0 });
       m.brandColor = layer.color;
       m.brandGlyph = layer.glyph || '';
@@ -646,7 +685,18 @@ function initMap(data) {
       m.on('popupopen', (e) => {
         if (isHomes) {
           const btn = e.popup.getElement().querySelector('.cmp-btn');
-          if (btn) btn.addEventListener('click', () => { map.closePopup(); openCompare(homeIdx); });
+          if (btn) {
+            if (compareAllowed()) {
+              btn.addEventListener('click', () => { map.closePopup(); openCompare(homeIdx); });
+            } else {
+              // In the Overview (no area selected) comparing is disabled — homes span
+              // multiple far-apart areas — so swap the button for a hint.
+              const hint = document.createElement('div');
+              hint.className = 'cmp-disabled-hint';
+              hint.textContent = 'Zoom into an area to compare homes';
+              btn.replaceWith(hint);
+            }
+          }
         }
         if (!markerOnly) populateNearest(point, layer, e.popup);
       });
@@ -665,6 +715,8 @@ function initMap(data) {
   addAllNoneToggle(layersCtrl);
   // Combined map: offer a "Jump to area" switcher (no-op for single-region data).
   addRegionSwitcher(data.regions, { center: data.center, zoom: data.zoom });
+  map.on('moveend zoomend', syncRegion); // track which area is in view (gates Compare)
+  syncRegion();
   map.on('overlayadd overlayremove', updateHash); // persist toggles to the URL
 
   // Remember each layer's checkbox (same order as layerIndex) so we can re-sync

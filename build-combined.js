@@ -48,7 +48,9 @@ const OVERVIEW = { center: [32.1, -83.4], zoom: 6 };
         merged.set(layer.id, m);
         order.push(layer.id);
       }
-      m.points.push(...layer.points);
+      // Tag each point with its area so app.js can scope Compare/nearest to one
+      // region (never mixing homes/stores across far-apart areas).
+      for (const pt of layer.points) m.points.push({ ...pt, region: R.key });
     }
   }
 

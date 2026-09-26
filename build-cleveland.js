@@ -7,10 +7,8 @@ const { buildRegion } = require('./build-lib');
 const UA = { 'User-Agent': 'cle-house-map/1.0 (wknight94@gmail.com)' };
 
 const HOMES = [
-  { q: '209 Talons Ridge Rd NW, Cleveland, TN 37312', lat: 35.280230075322, lng: -84.824493505227, label: '209 Talons Ridge' },
   { q: '220 Hollow Rd NE, Cleveland, TN 37323', lat: 35.144811199804316, lng: -84.79508898607234, label: '220 Hollow Rd', url: 'https://www.realtor.com/realestateandhomes-detail/220-Hollow-Rd-NE_Cleveland_TN_37323_M82459-56528' },
   { q: '162 Lower Woods Trl NE, Cleveland, TN 37323', lat: 35.167832609967896, lng: -84.81285004232919, label: '162 Lower Woods', url: 'https://www.realtor.com/realestateandhomes-detail/162-Lower-Woods-Trl-NE_Cleveland_TN_37323_M88335-25797' },
-  { q: '132 Covy Ct, Cleveland, TN 37312', lat: 35.234447830737395, lng: -84.80542830811267, label: '132 Covy Ct', url: 'https://www.realtor.com/realestateandhomes-detail/M8697296249' },
   { q: '5131 Shelterwood Dr NE, Cleveland, TN 37312', lat: 35.218018890136186, lng: -84.82366722690378, label: '5131 Shelterwood Dr', url: 'https://www.zillow.com/homedetails/5131-Shelterwood-Dr-NE-Cleveland-TN-37312/337730574_zpid/' },
   { q: '4984 Skyline Way NE Unit 85, Cleveland, TN 37312', lat: 35.21532836111239, lng: -84.8193881698392, label: '4984 Skyline Way', url: 'https://www.realtor.com/realestateandhomes-detail/4984-Skyline-Way-NE-85_Cleveland_TN_37312_M95571-11666' },
   { q: '2029 Pearl Dr SW, Cleveland, TN 37311', lat: 35.141714751225, lng: -84.908790032726, label: '2029 Pearl Dr' },
@@ -33,7 +31,10 @@ const MANUAL_STORES = [
   // Nearest Texas Roadhouses are in the Chattanooga area (outside the build bbox),
   // per the user. Added manually so Cleveland homes still show a TR drive time.
   { brand: 'texasroadhouse', name: 'Texas Roadhouse — Hamilton Place, Chattanooga', address: '2020 Hamilton Place Blvd, Chattanooga, TN 37421', lat: 35.032573402549, lng: -85.165622131048 },
-  { brand: 'texasroadhouse', name: 'Texas Roadhouse — Hixson', address: '5362 Highway 153, Hixson, TN 37343', lat: 35.134753626874, lng: -85.246375135036 }
+  { brand: 'texasroadhouse', name: 'Texas Roadhouse — Hixson', address: '5362 Highway 153, Hixson, TN 37343', lat: 35.134753626874, lng: -85.246375135036 },
+  // OSM lacks the Cleveland HomeGoods; it's in the Paul Huff Pkwy plaza (co-located
+  // with TJ Maxx). Address per user; coords via geocoder.
+  { brand: 'homegoods', name: 'HomeGoods — 300 Paul Huff Pkwy NW', address: '300 Paul Huff Pkwy NW, Cleveland, TN 37312', lat: 35.2056537, lng: -84.8522714 }
 ];
 
 // Curated non-brand destination layer: Chattanooga airport (CHA / Lovell Field)
@@ -71,7 +72,8 @@ const BRANDS = [
   { key: 'cvs',           label: 'CVS',             match: /\bcvs\b/i,            color: '#CC0000', glyph: 'CVS'},
   { key: 'walgreens',     label: 'Walgreens',       match: /walgreens/i,           color: '#E31837', glyph: 'Wg' },
   { key: 'homedepot',     label: 'Home Depot',      match: /home\s*depot/i,        color: '#F96302', glyph: 'HD' },
-  { key: 'lowes',         label: "Lowe's",          match: /lowe'?s/i,            color: '#004990', glyph: 'Lw' }
+  { key: 'lowes',         label: "Lowe's",          match: /lowe'?s/i,            color: '#004990', glyph: 'Lw' },
+  { key: 'homegoods',     label: 'HomeGoods',       match: /home\s*goods/i,        color: '#00A0A6', glyph: 'HG' }
 ];
 
 fs.mkdirSync('cleveland', { recursive: true });
@@ -81,7 +83,7 @@ fs.mkdirSync('cleveland', { recursive: true });
 const cfg = {
   UA, state: 'TN', stateFull: 'Tennessee', outfile: 'cleveland/data.json',
   bbox: '35.05,-85.00,35.42,-84.65', // Cleveland TN + margin (Athens N / toward Chattanooga SW)
-  overpassNames: 'Food City|Walmart|Publix|Aldi|Target|Cracker Barrel|Olive Garden|Texas Roadhouse|Chick-?fil-?A|Zaxby|CVS|Walgreens|Home ?Depot|Lowe',
+  overpassNames: 'Food City|Walmart|Publix|Aldi|Target|Cracker Barrel|Olive Garden|Texas Roadhouse|Chick-?fil-?A|Zaxby|CVS|Walgreens|Home ?Depot|Home ?Goods|Lowe',
   HOMES, BRANDS, EMERGENCY_ROOMS, ER_LAYER, MANUAL_STORES, EXTRA_LAYERS, DEFAULT_VIEW
 };
 module.exports = cfg;
