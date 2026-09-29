@@ -8,10 +8,10 @@ const UA = { 'User-Agent': 'cle-house-map/1.0 (wknight94@gmail.com)' };
 
 const HOMES = [
   { q: '220 Hollow Rd NE, Cleveland, TN 37323', lat: 35.144811199804316, lng: -84.79508898607234, label: '220 Hollow Rd', url: 'https://www.realtor.com/realestateandhomes-detail/220-Hollow-Rd-NE_Cleveland_TN_37323_M82459-56528' },
-  { q: '162 Lower Woods Trl NE, Cleveland, TN 37323', lat: 35.167832609967896, lng: -84.81285004232919, label: '162 Lower Woods', url: 'https://www.realtor.com/realestateandhomes-detail/162-Lower-Woods-Trl-NE_Cleveland_TN_37323_M88335-25797' },
   { q: '5131 Shelterwood Dr NE, Cleveland, TN 37312', lat: 35.218018890136186, lng: -84.82366722690378, label: '5131 Shelterwood Dr', url: 'https://www.zillow.com/homedetails/5131-Shelterwood-Dr-NE-Cleveland-TN-37312/337730574_zpid/' },
   { q: '4984 Skyline Way NE Unit 85, Cleveland, TN 37312', lat: 35.21532836111239, lng: -84.8193881698392, label: '4984 Skyline Way', url: 'https://www.realtor.com/realestateandhomes-detail/4984-Skyline-Way-NE-85_Cleveland_TN_37312_M95571-11666' },
-  { q: '540 Clintons Pass NW, Cleveland, TN 37312', lat: 35.20907974868267, lng: -84.90964797871132, label: '540 Clintons Pass', url: 'https://www.realtor.com/realestateandhomes-detail/540-Clintons-Pass-NW_Cleveland_TN_37312_M76447-23920' }
+  { q: '540 Clintons Pass NW, Cleveland, TN 37312', lat: 35.20907974868267, lng: -84.90964797871132, label: '540 Clintons Pass', url: 'https://www.realtor.com/realestateandhomes-detail/540-Clintons-Pass-NW_Cleveland_TN_37312_M76447-23920' },
+  { q: '2963 Discovery Dr NW, Cleveland, TN 37312', lat: 35.200514639727885, lng: -84.90193562858661, label: '2963 Discovery Dr' }
 ];
 
 // Hospitals with a 24/7 ER in/around Cleveland (coords via US Census geocoder).
