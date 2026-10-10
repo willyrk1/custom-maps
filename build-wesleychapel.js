@@ -14,7 +14,8 @@ const HOMES = [
   { q: 'Riverwood by Pulte, Zephyrhills, FL', lat: 28.181616893486055, lng: -82.19742405405273, label: 'Riverwood by Pulte', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/riverwood-211283' },
   { q: '25515 Bruford Blvd, Land O Lakes, FL 34639', lat: 28.22471772382, lng: -82.393797067374, label: '25515 Bruford Blvd' },
   { q: '7306 Bridgeview Dr, Wesley Chapel, FL 33545', lat: 28.263236373321, lng: -82.287491008833, label: '7306 Bridgeview Dr' },
-  { q: '4250 Warwick Hills Dr, Wesley Chapel, FL 33543', lat: 28.21820732121, lng: -82.313992470182, label: '4250 Warwick Hills Dr' }
+  { q: '4250 Warwick Hills Dr, Wesley Chapel, FL 33543', lat: 28.21820732121, lng: -82.313992470182, label: '4250 Warwick Hills Dr' },
+  { q: '31230 Alchester Dr, Wesley Chapel, FL 33543', lat: 28.171650088638, lng: -82.299758995906, label: '31230 Alchester Dr' }
 ];
 
 // Hospitals with a 24/7 ER in/around Wesley Chapel (coords via Census/Nominatim).
