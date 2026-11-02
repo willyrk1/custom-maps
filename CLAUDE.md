@@ -117,6 +117,15 @@ bypassable and must never replace this.
 
 ## Editing the data
 
+Normal flow: `node build-combined.js`, then the user runs
+`node publish.js "Commit message"`. It prompts for the password (hidden), encrypts
+the root `data.json`, verifies the result decrypts, then commits and pushes
+`data.encrypted` plus any changed `build-*.js`. It refuses a `data.json` older than
+the configs or tracked by git. Prefer it over `encrypt-data.js "<password>"`, which
+leaves the password in terminal scrollback and shell history.
+
+The older per-area commands, for reference:
+
 ```bash
 # Knoxville (root):
 node build-data.js                                                   # -> data.json
