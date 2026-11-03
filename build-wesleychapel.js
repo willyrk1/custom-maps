@@ -9,14 +9,11 @@ const UA = { 'User-Agent': 'wc-house-map/1.0 (wknight94@gmail.com)' };
 const HOMES = [
   { q: '6376 Atlantic Beach Ave, Wesley Chapel, FL 33545', lat: 28.250295011059, lng: -82.358274248976, label: '6376 Atlantic Beach' },
   { q: '5150 Villagebrook Dr, Wesley Chapel, FL 33543', lat: 28.232147582569, lng: -82.365100140754, label: '5150 Villagebrook', url: 'https://www.realtor.com/realestateandhomes-detail/5150-Villagebrook-Dr_Wesley-Chapel_FL_33544_M51845-23222' },
-  { q: 'Two Rivers, Wesley Chapel, FL', lat: 28.18165304764575, lng: -82.23632818966671, label: 'Two Rivers', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/two-rivers-211258' },
-  { q: '30789 Parrot Reef Ct, Wesley Chapel, FL 33545', lat: 28.269171641425, lng: -82.305265000728, label: '30789 Parrot Reef', url: 'https://www.realtor.com/realestateandhomes-detail/30789-Parrot-Reef-Ct_Wesley-Chapel_FL_33545_M57488-99991' },
   { q: 'Riverwood by Pulte, Zephyrhills, FL', lat: 28.181616893486055, lng: -82.19742405405273, label: 'Riverwood by Pulte', url: 'https://www.pulte.com/homes/florida/tampa/zephyrhills/riverwood-211283' },
   { q: '25515 Bruford Blvd, Land O Lakes, FL 34639', lat: 28.22471772382, lng: -82.393797067374, label: '25515 Bruford Blvd' },
   { q: '7306 Bridgeview Dr, Wesley Chapel, FL 33545', lat: 28.263236373321, lng: -82.287491008833, label: '7306 Bridgeview Dr' },
   { q: '4250 Warwick Hills Dr, Wesley Chapel, FL 33543', lat: 28.21820732121, lng: -82.313992470182, label: '4250 Warwick Hills Dr' },
   { q: '31230 Alchester Dr, Wesley Chapel, FL 33543', lat: 28.171650088638, lng: -82.299758995906, label: '31230 Alchester Dr' },
-  { q: '1750 Leybourne Loop, Wesley Chapel, FL 33543', lat: 28.183965412655, lng: -82.295135303911, label: '1750 Leybourne Loop', url: 'https://www.realtor.com/realestateandhomes-detail/1750-Leybourne-Loop_Wesley-Chapel_FL_33543_M65895-39958' },
   // New construction (Northwater at Two Rivers): geocoders only know the street, so
   // coords are user-supplied.
   { q: '35694 Kinsey Pt, Zephyrhills, FL 33541', lat: 28.19665273430338, lng: -82.22743491221209, label: '35694 Kinsey Pt' }
